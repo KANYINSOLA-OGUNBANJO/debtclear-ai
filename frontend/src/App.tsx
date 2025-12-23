@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { generatePDF } from './pdfGenerator'
 
 interface Debt {
   name: string
@@ -44,7 +46,6 @@ function App() {
   }
 
   const calculateOptimization = async () => {
-    // Validate inputs
     const validDebts = debts.filter(d => d.name && d.balance > 0 && d.apr > 0)
     
     if (validDebts.length === 0) {
@@ -75,7 +76,6 @@ function App() {
       
       if (data.success) {
         setResults(data)
-        // Scroll to results
         setTimeout(() => {
           document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
@@ -88,6 +88,51 @@ function App() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Prepare chart data
+  const prepareTimelineData = () => {
+    if (!results) return []
+    
+    const maxMonths = Math.max(
+      results.strategies.avalanche.timeline.length,
+      results.strategies.snowball.timeline.length,
+      results.strategies.hybrid.timeline.length
+    )
+    
+    const chartData = []
+    for (let i = 0; i < maxMonths; i++) {
+      chartData.push({
+        month: i + 1,
+        avalanche: results.strategies.avalanche.timeline[i]?.remaining_balance || 0,
+        snowball: results.strategies.snowball.timeline[i]?.remaining_balance || 0,
+        hybrid: results.strategies.hybrid.timeline[i]?.remaining_balance || 0,
+      })
+    }
+    
+    return chartData
+  }
+
+  const prepareComparisonData = () => {
+    if (!results) return []
+    
+    return [
+      {
+        name: 'Avalanche',
+        months: results.strategies.avalanche.months_to_freedom,
+        interest: results.strategies.avalanche.total_interest,
+      },
+      {
+        name: 'Snowball',
+        months: results.strategies.snowball.months_to_freedom,
+        interest: results.strategies.snowball.total_interest,
+      },
+      {
+        name: 'Hybrid',
+        months: results.strategies.hybrid.months_to_freedom,
+        interest: results.strategies.hybrid.total_interest,
+      }
+    ]
   }
 
   return (
@@ -207,42 +252,126 @@ function App() {
 
         {/* Results Section */}
         {results && (
-          <div id="results" className="max-w-4xl mx-auto mt-8 bg-white rounded-2xl shadow-2xl p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              ✨ Your Personalized Debt Freedom Plan
-            </h2>
+          <div id="results" className="max-w-4xl mx-auto mt-8 space-y-8">
+            
+            {/* Strategy Comparison Cards */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                ✨ Your Personalized Debt Freedom Plan
+              </h2>
 
-            {/* Strategy Comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              {Object.entries(results.strategies).map(([name, strategy]: [string, any]) => (
-                <div
-                  key={name}
-                  className={`p-6 rounded-lg border-2 ${
-                    name === results.recommended
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold text-lg capitalize">{name}</h3>
-                    {name === results.recommended && (
-                      <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
-                        RECOMMENDED
-                      </span>
-                    )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {Object.entries(results.strategies).map(([name, strategy]: [string, any]) => (
+                  <div
+                    key={name}
+                    className={`p-6 rounded-lg border-2 ${
+                      name === results.recommended
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-bold text-lg capitalize">{name}</h3>
+                      {name === results.recommended && (
+                        <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+                          RECOMMENDED
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900 mb-2">
+                      {strategy.months_to_freedom} months
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      £{strategy.total_interest.toFixed(2)} interest
+                    </p>
                   </div>
-                  <p className="text-3xl font-bold text-gray-900 mb-2">
-                    {strategy.months_to_freedom} months
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    £{strategy.total_interest.toFixed(2)} interest
-                  </p>
+                ))}
+              </div>
+            </div>
+
+            {/* Timeline Chart */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                📈 Debt Payoff Timeline
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={prepareTimelineData()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="month" 
+                    label={{ value: 'Months', position: 'insideBottom', offset: -5 }}
+                  />
+                  <YAxis 
+                    label={{ value: 'Remaining Balance (£)', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => `£${value.toFixed(2)}`}
+                    labelFormatter={(label) => `Month ${label}`}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="avalanche" 
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    name="Avalanche"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="snowball" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    name="Snowball"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="hybrid" 
+                    stroke="#10b981" 
+                    strokeWidth={3}
+                    name="Hybrid (Recommended)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="text-sm text-gray-600 mt-4 text-center">
+                Watch your debt decrease over time with each strategy
+              </p>
+            </div>
+
+            {/* Comparison Chart */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                📊 Strategy Comparison
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4">Time to Freedom</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={prepareComparisonData()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis label={{ value: 'Months', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip />
+                      <Bar dataKey="months" fill="#3b82f6" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4">Total Interest Paid</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={prepareComparisonData()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis label={{ value: 'Interest (£)', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip formatter={(value: number) => `£${value.toFixed(2)}`} />
+                      <Bar dataKey="interest" fill="#ef4444" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
 
             {/* SHAP Explanations */}
-            <div className="mb-8">
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 🔍 Why This Order? (AI Explanation)
               </h3>
@@ -259,14 +388,31 @@ function App() {
               ))}
             </div>
 
-            {/* Action Button */}
-            <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border-2 border-green-200">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                🎯 Ready to become debt-free in {results.strategies[results.recommended].months_to_freedom} months?
-              </h3>
-              <p className="text-gray-700 mb-4">
-                You'll save £{(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)} compared to paying smallest debts first!
-              </p>
+            {/* Call to Action */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border-2 border-green-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  🎯 Ready to become debt-free in {results.strategies[results.recommended].months_to_freedom} months?
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  You'll save £{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)} compared to paying smallest debts first!
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => generatePDF({
+                      debts: debts.filter(d => d.name && d.balance > 0),
+                      monthlyBudget,
+                      results
+                    })}
+                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    📄 Download as PDF
+                  </button>
+                  <button className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                    📧 Email My Plan (Coming Soon!)
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
