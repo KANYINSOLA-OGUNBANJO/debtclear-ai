@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
+import { sendEmail } from './emailSender'
 
 interface Debt {
   name: string
@@ -34,6 +35,10 @@ function App() {
   const [monthlyBudget, setMonthlyBudget] = useState(0)
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<any>(null)
+  const [showEmailDialog, setShowEmailDialog] = useState(false)
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   const addDebt = () => {
     setDebts([...debts, { name: '', balance: 0, apr: 0, minPayment: 0 }])
@@ -90,7 +95,53 @@ function App() {
     }
   }
 
-  // Prepare chart data
+  const handleSendEmail = async () => {
+    if (!userName.trim()) {
+      alert('Please enter your name!')
+      return
+    }
+    
+    if (!userEmail.trim() || !userEmail.includes('@')) {
+      alert('Please enter a valid email address!')
+      return
+    }
+    
+    setSendingEmail(true)
+    
+    try {
+      const emailData = {
+        userName: userName,
+        userEmail: userEmail,
+        months: results.strategies.hybrid.months_to_freedom,
+        strategy: 'Hybrid (Recommended)',
+        interest: results.strategies.hybrid.total_interest,
+        savings: Math.abs(
+          results.strategies.snowball.total_interest - 
+          results.strategies.hybrid.total_interest
+        ),
+        explanation: results.explanations
+          .map((exp: any) => `${exp.rank}. ${exp.debt_name}: ${exp.explanation}`)
+          .join('\n\n')
+      }
+      
+      const success = await sendEmail(emailData)
+      
+      if (success) {
+        alert('✅ Email sent successfully! Check your inbox.')
+        setShowEmailDialog(false)
+        setUserName('')
+        setUserEmail('')
+      } else {
+        alert('❌ Failed to send email. Please try again.')
+      }
+    } catch (error) {
+      alert('❌ Failed to send email. Please try again.')
+      console.error(error)
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
   const prepareTimelineData = () => {
     if (!results) return []
     
@@ -408,10 +459,75 @@ function App() {
                   >
                     📄 Download as PDF
                   </button>
-                  <button className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
-                    📧 Email My Plan (Coming Soon!)
+                  <button 
+                    onClick={() => setShowEmailDialog(true)}
+                    className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    📧 Email My Plan
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Email Dialog */}
+        {showEmailDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                📧 Email Your Plan
+              </h3>
+              <p className="text-gray-600 mb-6">
+                We'll send your personalized debt freedom plan to your email!
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="John Smith"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Email
+                  </label>
+                  <input
+                    type="email"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="john@example.com"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleSendEmail}
+                  disabled={sendingEmail}
+                  className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {sendingEmail ? '📤 Sending...' : '📧 Send Email'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEmailDialog(false)
+                    setUserName('')
+                    setUserEmail('')
+                  }}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
