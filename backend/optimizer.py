@@ -198,5 +198,45 @@ def calculate_budget_scenarios(debts: List[Dict], base_budget: float) -> List[Di
             'months': result['strategies']['hybrid']['months_to_freedom'],
             'interest': result['strategies']['hybrid']['total_interest']
         })
+def calculate_with_extra_payment(debts: List[Dict], base_budget: float, extra_payment: float) -> Dict:
+    """
+    Calculate impact of a one-time extra payment (bonus, tax refund, etc.)
+    Returns both original plan and accelerated plan
+    """
+    optimizer = DebtOptimizer()
     
+    # Original plan
+    original = optimizer.optimize(debts, base_budget)
+    
+    # Make a copy of debts and apply extra payment to highest priority debt
+    debts_copy = [debt.copy() for debt in debts]
+    hybrid_order = original['strategies']['hybrid']['priority_order']
+    
+    # Apply extra payment to the first priority debt
+    if hybrid_order and extra_payment > 0:
+        priority_debt_index = hybrid_order[0]
+        debts_copy[priority_debt_index]['balance'] = max(
+            0, 
+            debts_copy[priority_debt_index]['balance'] - extra_payment
+        )
+    
+    # Calculate new plan with reduced balance
+    accelerated = optimizer.optimize(debts_copy, base_budget)
+    
+    return {
+        'original': {
+            'months': original['strategies']['hybrid']['months_to_freedom'],
+            'interest': original['strategies']['hybrid']['total_interest']
+        },
+        'accelerated': {
+            'months': accelerated['strategies']['hybrid']['months_to_freedom'],
+            'interest': accelerated['strategies']['hybrid']['total_interest']
+        },
+        'savings': {
+            'months_saved': original['strategies']['hybrid']['months_to_freedom'] - 
+                          accelerated['strategies']['hybrid']['months_to_freedom'],
+            'interest_saved': original['strategies']['hybrid']['total_interest'] - 
+                            accelerated['strategies']['hybrid']['total_interest']
+        }
+    }    
     return scenarios

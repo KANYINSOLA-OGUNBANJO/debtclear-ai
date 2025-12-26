@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
-from optimizer import DebtOptimizer, calculate_budget_scenarios
+from optimizer import DebtOptimizer, calculate_budget_scenarios, calculate_with_extra_payment
 from explainer import SHAPExplainer
 
 # Create the FastAPI app
@@ -58,7 +58,7 @@ def optimize_debts(request: OptimizationRequest):
         hybrid_order = optimization_result['strategies']['hybrid']['priority_order']
         shap_explanation = explainer.explain_recommendation(debts_list, hybrid_order)
         
-        # Calculate budget scenarios (NEW!)
+        # Calculate budget scenarios
         budget_scenarios = calculate_budget_scenarios(debts_list, request.monthlyBudget)
         
         # Combine results
@@ -68,7 +68,30 @@ def optimize_debts(request: OptimizationRequest):
             'recommended': optimization_result['recommended'],
             'explanations': shap_explanation['explanations'],
             'feature_importance': shap_explanation['feature_importance'],
-            'budget_scenarios': budget_scenarios  # NEW!
+            'budget_scenarios': budget_scenarios
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+@app.post("/calculate-bonus-impact")
+def calculate_bonus_impact(request: dict):
+    """
+    Calculate impact of a one-time extra payment (bonus, tax refund, etc.)
+    """
+    try:
+        debts_list = request['debts']
+        monthly_budget = request['monthlyBudget']
+        extra_payment = request['extraPayment']
+        
+        result = calculate_with_extra_payment(debts_list, monthly_budget, extra_payment)
+        
+        return {
+            'success': True,
+            'result': result
         }
         
     except Exception as e:

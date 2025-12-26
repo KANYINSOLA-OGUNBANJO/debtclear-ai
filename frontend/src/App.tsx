@@ -40,6 +40,9 @@ function App() {
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
   const [sendingEmail, setSendingEmail] = useState(false)
+  const [bonusAmount, setBonusAmount] = useState(0)
+  const [bonusResult, setBonusResult] = useState<any>(null)
+  const [calculatingBonus, setCalculatingBonus] = useState(false)
 
   const addDebt = () => {
     setDebts([...debts, { name: '', type: 'credit-card', balance: 0, apr: 0, minPayment: 0 }])
@@ -107,6 +110,7 @@ function App() {
       
       if (data.success) {
         setResults(data)
+        setBonusResult(null) // Reset bonus result when recalculating
         setTimeout(() => {
           document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
@@ -210,6 +214,62 @@ function App() {
         interest: results.strategies.hybrid.total_interest,
       }
     ]
+  }
+
+  const calculateFreedomDate = (monthsFromNow: number): string => {
+    const today = new Date()
+    const freedomDate = new Date(today)
+    freedomDate.setMonth(freedomDate.getMonth() + monthsFromNow)
+    
+    return freedomDate.toLocaleDateString('en-GB', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    })
+  }
+
+  const calculateBonusImpact = async () => {
+    if (bonusAmount <= 0) {
+      alert('Please enter a bonus amount!')
+      return
+    }
+    
+    setCalculatingBonus(true)
+    
+    try {
+      const validDebts = debts.filter(d => d.balance > 0 && d.apr >= 0)
+      
+      const response = await fetch('http://127.0.0.1:8000/calculate-bonus-impact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          debts: validDebts.map(d => ({
+            name: d.name,
+            balance: d.balance,
+            apr: d.apr,
+            minPayment: d.minPayment,
+            type: d.type
+          })),
+          monthlyBudget: monthlyBudget,
+          extraPayment: bonusAmount
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setBonusResult(data.result)
+      } else {
+        alert('Error calculating bonus impact: ' + data.error)
+      }
+    } catch (error) {
+      alert('Failed to calculate bonus impact!')
+      console.error(error)
+    } finally {
+      setCalculatingBonus(false)
+    }
   }
 
   return (
@@ -387,7 +447,114 @@ function App() {
               </div>
             </div>
 
-            {/* Budget Scenario Comparison - NEW FEATURE 3! */}
+            {/* Debt Freedom Date + Bonus Calculator - NEW KILLER FEATURE! */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                  🎯 Your Debt Freedom Date
+                </h2>
+                <div className="inline-block p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border-2 border-green-300">
+                  <p className="text-sm text-gray-600 mb-2">You'll be completely debt-free by:</p>
+                  <p className="text-4xl font-bold text-green-600 mb-2">
+                    🗓️ {calculateFreedomDate(results.strategies[results.recommended].months_to_freedom)}
+                  </p>
+                  <p className="text-lg text-gray-700">
+                    That's <span className="font-bold text-blue-600">{results.strategies[results.recommended].months_to_freedom} months</span> from now!
+                  </p>
+                </div>
+              </div>
+              
+              <div className="border-t-2 border-gray-200 pt-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+                  💰 Got a Bonus or Windfall?
+                </h3>
+                <p className="text-gray-600 text-center mb-6">
+                  See how a one-time extra payment accelerates your debt freedom!
+                </p>
+                
+                <div className="max-w-md mx-auto">
+                  <div className="flex gap-3 mb-6">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Extra Payment Amount (£)
+                      </label>
+                      <input
+                        type="number"
+                        value={bonusAmount || ''}
+                        onChange={(e) => setBonusAmount(parseFloat(e.target.value) || 0)}
+                        className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="e.g., 2000"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Tax refund, bonus, gift, inheritance, etc.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={calculateBonusImpact}
+                    disabled={calculatingBonus || bonusAmount <= 0}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {calculatingBonus ? '⚡ Calculating...' : '⚡ Calculate Impact'}
+                  </button>
+                </div>
+                
+                {bonusResult && (
+                  <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-300">
+                    <h4 className="text-xl font-bold text-gray-900 mb-4 text-center">
+                      ✨ Impact of £{bonusAmount.toLocaleString()} Extra Payment
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="text-center p-4 bg-white rounded-lg border-2 border-gray-200">
+                        <p className="text-sm text-gray-600 mb-1">Original Plan</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          {bonusResult.original.months} months
+                        </p>
+                        <p className="text-sm text-gray-600 mt-2">
+                          £{bonusResult.original.interest.toFixed(2)} interest
+                        </p>
+                      </div>
+                      
+                      <div className="text-center p-4 bg-green-100 rounded-lg border-2 border-green-500">
+                        <p className="text-sm text-green-800 mb-1">With Extra Payment</p>
+                        <p className="text-2xl font-bold text-green-700">
+                          {bonusResult.accelerated.months} months
+                        </p>
+                        <p className="text-sm text-green-800 mt-2">
+                          £{bonusResult.accelerated.interest.toFixed(2)} interest
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-green-300">
+                        <span className="text-sm font-medium text-gray-700">Time Saved:</span>
+                        <span className="text-xl font-bold text-green-600">
+                          {bonusResult.savings.months_saved} months ⚡
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-green-300">
+                        <span className="text-sm font-medium text-gray-700">Interest Saved:</span>
+                        <span className="text-xl font-bold text-green-600">
+                          £{bonusResult.savings.interest_saved.toFixed(2)} 💰
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6 text-center">
+                      <p className="text-lg font-bold text-green-700">
+                        New Freedom Date: {calculateFreedomDate(bonusResult.accelerated.months)} 🎉
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Budget Scenario Comparison */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 💰 What If You Paid More?
