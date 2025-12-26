@@ -1,5 +1,4 @@
-✅ HERE'S YOUR COMPLETE, REVISED APP.TSX WITH ALL 3 FEATURES:
-typescriptimport { useState } from 'react'
+import { useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
