@@ -1,10 +1,12 @@
-import { useState } from 'react'
+✅ HERE'S YOUR COMPLETE, REVISED APP.TSX WITH ALL 3 FEATURES:
+typescriptimport { useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
 
 interface Debt {
   name: string
+  type: string
   balance: number
   apr: number
   minPayment: number
@@ -30,7 +32,7 @@ interface Explanation {
 
 function App() {
   const [debts, setDebts] = useState<Debt[]>([
-    { name: '', balance: 0, apr: 0, minPayment: 0 }
+    { name: '', type: 'credit-card', balance: 0, apr: 0, minPayment: 0 }
   ])
   const [monthlyBudget, setMonthlyBudget] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -41,7 +43,32 @@ function App() {
   const [sendingEmail, setSendingEmail] = useState(false)
 
   const addDebt = () => {
-    setDebts([...debts, { name: '', balance: 0, apr: 0, minPayment: 0 }])
+    setDebts([...debts, { name: '', type: 'credit-card', balance: 0, apr: 0, minPayment: 0 }])
+  }
+
+  const getTypicalAPR = (type: string): number => {
+    const aprRanges: Record<string, number> = {
+      'credit-card': 24.9,
+      'store-card': 29.9,
+      'personal-loan': 9.9,
+      'car-finance': 7.9,
+      'payday-loan': 400,
+      'overdraft': 39.9,
+      'student-loan': 5.5,
+      'buy-now-pay-later': 0,
+      'other': 10
+    }
+    return aprRanges[type] || 10
+  }
+
+  const handleTypeChange = (index: number, type: string) => {
+    const newDebts = [...debts]
+    newDebts[index] = { 
+      ...newDebts[index], 
+      type: type,
+      apr: getTypicalAPR(type)
+    }
+    setDebts(newDebts)
   }
 
   const updateDebt = (index: number, field: string, value: string | number) => {
@@ -51,7 +78,7 @@ function App() {
   }
 
   const calculateOptimization = async () => {
-    const validDebts = debts.filter(d => d.name && d.balance > 0 && d.apr > 0)
+    const validDebts = debts.filter(d => d.balance > 0 && d.apr >= 0)
     
     if (validDebts.length === 0) {
       alert('Please enter at least one complete debt!')
@@ -215,14 +242,35 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Debt Name (e.g., Credit Card, Loan)
+                    Debt Type
+                  </label>
+                  <select
+                    value={debt.type}
+                    onChange={(e) => handleTypeChange(index, e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="credit-card">Credit Card</option>
+                    <option value="store-card">Store Card</option>
+                    <option value="personal-loan">Personal Loan</option>
+                    <option value="car-finance">Car Finance</option>
+                    <option value="payday-loan">Payday Loan</option>
+                    <option value="overdraft">Bank Overdraft</option>
+                    <option value="student-loan">Student Loan</option>
+                    <option value="buy-now-pay-later">Buy Now Pay Later</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Debt Name (Optional)
                   </label>
                   <input
                     type="text"
                     value={debt.name}
                     onChange={(e) => updateDebt(index, 'name', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., Barclaycard"
+                    placeholder="e.g., Barclaycard, HSBC Loan"
                   />
                 </div>
 
@@ -249,11 +297,11 @@ function App() {
                     value={debt.apr || ''}
                     onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="29.9"
+                    placeholder="Auto-filled based on type"
                   />
                 </div>
 
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Minimum Payment (£)
                   </label>
@@ -337,6 +385,89 @@ function App() {
                     </p>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Budget Scenario Comparison - NEW FEATURE 3! */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                💰 What If You Paid More?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                See how increasing your monthly payment accelerates your debt freedom!
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {results.budget_scenarios?.map((scenario: any, index: number) => {
+                  const isBase = index === 0
+                  const timeSaved = isBase ? 0 : results.budget_scenarios[0].months - scenario.months
+                  const interestSaved = isBase ? 0 : results.budget_scenarios[0].interest - scenario.interest
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`p-6 rounded-lg border-2 ${
+                        index === 1
+                          ? 'border-green-500 bg-green-50 transform scale-105'
+                          : 'border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <div className="text-center mb-4">
+                        <p className="text-sm text-gray-600 mb-1">
+                          {isBase ? 'Your Current Budget' : `Pay £${scenario.budget - results.budget_scenarios[0].budget} More`}
+                        </p>
+                        <p className="text-3xl font-bold text-gray-900">
+                          £{scenario.budget}
+                          <span className="text-sm text-gray-500">/month</span>
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-3 border-t-2 border-gray-200 pt-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Time to Freedom:</span>
+                          <span className="font-bold text-blue-600">{scenario.months} months</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Total Interest:</span>
+                          <span className="font-bold text-red-600">£{scenario.interest.toFixed(2)}</span>
+                        </div>
+                        
+                        {!isBase && (
+                          <div className="mt-4 pt-4 border-t-2 border-green-200 bg-green-100 -mx-6 px-6 py-3 rounded-b-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-green-800">Time Saved:</span>
+                              <span className="font-bold text-green-700">
+                                {timeSaved} months ⚡
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-green-800">Interest Saved:</span>
+                              <span className="font-bold text-green-700">
+                                £{interestSaved.toFixed(2)} 💰
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {index === 1 && (
+                        <div className="mt-4 text-center">
+                          <span className="inline-block px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
+                            BEST VALUE
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                <p className="text-sm text-gray-700">
+                  <strong>💡 Pro Tip:</strong> Even small increases make a big difference! 
+                  Paying just £100 more per month could save you months of payments and hundreds in interest.
+                </p>
               </div>
             </div>
 
@@ -439,6 +570,61 @@ function App() {
               ))}
             </div>
 
+            {/* Payment Schedule */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                📅 Your Monthly Payment Plan
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Follow this exact plan each month. We show the first 12 months below.
+              </p>
+              
+              <div className="space-y-4">
+                {results.strategies[results.recommended].payment_schedule?.slice(0, 12).map((month: any) => (
+                  <div key={month.month} className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-colors">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-lg text-gray-900">
+                        Month {month.month}
+                      </h4>
+                      <span className="text-sm font-semibold text-blue-600">
+                        Total: £{month.total_paid}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {month.payments.map((payment: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                          <div className="flex items-center gap-3">
+                            {payment.paid_off && (
+                              <span className="text-green-500 text-xl">✅</span>
+                            )}
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {payment.debt_name}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                Remaining: £{payment.remaining_balance.toLocaleString()}
+                                {payment.paid_off && <span className="text-green-600 font-bold ml-2">PAID OFF!</span>}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="font-bold text-blue-600">
+                            £{payment.payment_amount.toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {results.strategies[results.recommended].payment_schedule?.length > 12 && (
+                <p className="text-sm text-gray-500 mt-4 text-center">
+                  Showing first 12 months of {results.strategies[results.recommended].months_to_freedom} month plan
+                </p>
+              )}
+            </div>
+
             {/* Call to Action */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border-2 border-green-200">
@@ -451,7 +637,7 @@ function App() {
                 <div className="flex gap-4">
                   <button 
                     onClick={() => generatePDF({
-                      debts: debts.filter(d => d.name && d.balance > 0),
+                      debts: debts.filter(d => d.balance > 0),
                       monthlyBudget,
                       results
                     })}

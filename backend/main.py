@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
-from optimizer import DebtOptimizer
+from optimizer import DebtOptimizer, calculate_budget_scenarios
 from explainer import SHAPExplainer
 
 # Create the FastAPI app
@@ -44,7 +44,7 @@ def health_check():
 @app.post("/optimize")
 def optimize_debts(request: OptimizationRequest):
     """
-    Calculate optimal debt payoff strategies with SHAP explanations
+    Calculate optimal debt payoff strategies with SHAP explanations and budget scenarios
     """
     
     try:
@@ -58,13 +58,17 @@ def optimize_debts(request: OptimizationRequest):
         hybrid_order = optimization_result['strategies']['hybrid']['priority_order']
         shap_explanation = explainer.explain_recommendation(debts_list, hybrid_order)
         
+        # Calculate budget scenarios (NEW!)
+        budget_scenarios = calculate_budget_scenarios(debts_list, request.monthlyBudget)
+        
         # Combine results
         return {
             'success': True,
             'strategies': optimization_result['strategies'],
             'recommended': optimization_result['recommended'],
             'explanations': shap_explanation['explanations'],
-            'feature_importance': shap_explanation['feature_importance']
+            'feature_importance': shap_explanation['feature_importance'],
+            'budget_scenarios': budget_scenarios  # NEW!
         }
         
     except Exception as e:

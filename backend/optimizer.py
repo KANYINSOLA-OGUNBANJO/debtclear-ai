@@ -78,7 +78,7 @@ class DebtOptimizer:
     
     def _calculate_payoff(self, debts: List[Dict], order: List[int], budget: float) -> Dict:
         """
-        Simulate month-by-month payoff and calculate total interest
+        Simulate month-by-month payoff with detailed payment schedule
         """
         
         # Make copies of balances
@@ -87,6 +87,7 @@ class DebtOptimizer:
         months = 0
         total_interest = 0.0
         monthly_timeline = []
+        payment_schedule = []  # Detailed monthly payments
         
         # Keep going until all debts are paid
         while any(balance > 0 for balance in balances):
@@ -95,6 +96,9 @@ class DebtOptimizer:
             # Safety check - don't run forever
             if months > 360:  # 30 years max
                 break
+            
+            month_payments = []  # Track payments for this month
+            month_total_paid = 0
             
             # Calculate how much we need for minimum payments
             min_payments_total = sum(
@@ -106,11 +110,24 @@ class DebtOptimizer:
             # How much extra can we pay?
             extra_payment = max(0, budget - min_payments_total)
             
-            # Pay minimums on everything
+            # Pay minimums on everything first
             for i in range(len(debts)):
                 if balances[i] > 0:
                     payment = min(debts[i]['minPayment'], balances[i])
                     balances[i] -= payment
+                    month_total_paid += payment
+                    
+                    # Record this payment
+                    debt_name = debts[i].get('name', '') or debts[i].get('type', 'Unknown').replace('-', ' ').title()
+                    
+                    month_payments.append({
+                        'debt_index': i,
+                        'debt_name': debt_name,
+                        'payment_amount': round(payment, 2),
+                        'remaining_balance': round(max(0, balances[i]), 2),
+                        'paid_off': balances[i] <= 0.01
+                    })
+                    
                     balances[i] = max(0, balances[i])
             
             # Put extra payment on priority debt
@@ -118,7 +135,16 @@ class DebtOptimizer:
                 if balances[priority_index] > 0 and extra_payment > 0:
                     payment = min(extra_payment, balances[priority_index])
                     balances[priority_index] -= payment
+                    month_total_paid += payment
                     extra_payment -= payment
+                    
+                    # Update the payment record for this debt
+                    for p in month_payments:
+                        if p['debt_index'] == priority_index:
+                            p['payment_amount'] += round(payment, 2)
+                            p['remaining_balance'] = round(max(0, balances[priority_index]), 2)
+                            p['paid_off'] = balances[priority_index] <= 0.01
+                    
                     break
             
             # Calculate interest for this month
@@ -130,16 +156,47 @@ class DebtOptimizer:
             
             total_interest += month_interest
             
-            # Save this month's snapshot
-            monthly_timeline.append({
+            # Save payment schedule for this month
+            payment_schedule.append({
                 'month': months,
-                'remaining_balance': round(sum(balances), 2),
-                'interest_this_month': round(month_interest, 2)
+                'payments': month_payments,
+                'total_paid': round(month_total_paid, 2)
             })
+            
+            # Save this month's snapshot (for timeline chart)
+            if months <= 12:
+                monthly_timeline.append({
+                    'month': months,
+                    'remaining_balance': round(sum(balances), 2),
+                    'interest_this_month': round(month_interest, 2)
+                })
         
         return {
             'months_to_freedom': months,
             'total_interest': round(total_interest, 2),
             'priority_order': order,
-            'timeline': monthly_timeline[:12]  # First 12 months only
+            'timeline': monthly_timeline,
+            'payment_schedule': payment_schedule[:24]  # First 24 months
         }
+
+
+# NEW FUNCTION: Budget Scenario Comparison
+def calculate_budget_scenarios(debts: List[Dict], base_budget: float) -> List[Dict]:
+    """
+    Calculate results for different budget amounts to show impact of paying more
+    """
+    optimizer = DebtOptimizer()
+    scenarios = []
+    
+    # Calculate for base budget and two higher amounts
+    budgets = [base_budget, base_budget + 100, base_budget + 200]
+    
+    for budget in budgets:
+        result = optimizer.optimize(debts, budget)
+        scenarios.append({
+            'budget': budget,
+            'months': result['strategies']['hybrid']['months_to_freedom'],
+            'interest': result['strategies']['hybrid']['total_interest']
+        })
+    
+    return scenarios
