@@ -1,5 +1,4 @@
-✅ HERE'S YOUR COMPLETE, POLISHED APP.TSX WITH CONFETTI & LOADING ANIMATIONS:
-typescriptimport { useState } from 'react'
+import { useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
@@ -293,18 +292,82 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
             DebtClear AI
           </h1>
-          <p className="text-xl text-gray-600">
-            The UK's first debt optimizer with explainable AI
+          <p className="text-xl text-gray-600 mb-4">
+            Mathematical Debt Optimization with Transparent Results
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            See exactly WHY you should pay each debt first
-          </p>
+          
+          {/* Trust Badges */}
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold border border-blue-200">
+              MSc FinTech Built
+            </span>
+            <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-semibold border border-green-200">
+              Bank-Grade Algorithms
+            </span>
+            <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold border border-purple-200">
+              100% Free
+            </span>
+            <span className="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold border border-indigo-200">
+              Privacy First
+            </span>
+          </div>
         </div>
 
+        {/* How It Works Section */}
+        <div className="max-w-4xl mx-auto mb-8 bg-white rounded-2xl shadow-2xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+            How Our Calculations Work
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                ✓
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Proven Algorithms</h3>
+                <p className="text-sm text-gray-600">Uses industry-standard Avalanche and Snowball methods, mathematically proven to minimize interest</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                ✓
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Explainable Technology</h3>
+                <p className="text-sm text-gray-600">Powered by SHAP analysis (the same technology banks use) - you see exactly WHY each debt is prioritized</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                ✓
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Compound Interest Math</h3>
+                <p className="text-sm text-gray-600">Calculations based on actual compound interest formulas - the same math your creditors use</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                ✓
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Personalized Results</h3>
+                <p className="text-sm text-gray-600">Every calculation is tailored to your exact balances, interest rates, and monthly budget</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Input Form */}
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
             Enter Your Debts
@@ -417,6 +480,29 @@ function App() {
             </p>
           </div>
 
+          {/* Privacy & Disclaimer Notice */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-300">
+            <div className="flex items-start gap-3 mb-3">
+              <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h4 className="font-semibold text-gray-900 text-sm mb-1">Your Privacy Matters</h4>
+                <p className="text-xs text-gray-600">We don't store your financial data. All calculations happen securely in real-time and nothing is saved to our servers.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h4 className="font-semibold text-gray-900 text-sm mb-1">Important Note</h4>
+                <p className="text-xs text-gray-600">This tool provides educational guidance based on mathematical optimization. Results are accurate based on the information you provide. Always verify with your creditors and consider consulting a financial advisor for personalized advice.</p>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={calculateOptimization}
             disabled={loading}
@@ -428,10 +514,10 @@ function App() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                AI is analyzing your debts...
+                Analyzing your debts...
               </span>
             ) : (
-              'Calculate My Optimal Strategy 🚀'
+              'Calculate My Optimal Strategy'
             )}
           </button>
         </div>
@@ -443,7 +529,7 @@ function App() {
             {/* Strategy Comparison Cards */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                ✨ Your Personalized Debt Freedom Plan
+                Your Personalized Debt Freedom Plan
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -479,25 +565,25 @@ function App() {
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                  🎯 Your Debt Freedom Date
+                  Your Debt Freedom Date
                 </h2>
                 <div className="inline-block p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border-2 border-green-300">
                   <p className="text-sm text-gray-600 mb-2">You'll be completely debt-free by:</p>
                   <p className="text-4xl font-bold text-green-600 mb-2">
-                    🗓️ {calculateFreedomDate(results.strategies[results.recommended].months_to_freedom)}
+                    {calculateFreedomDate(results.strategies[results.recommended].months_to_freedom)}
                   </p>
                   <p className="text-lg text-gray-700">
-                    That's <span className="font-bold text-blue-600">{results.strategies[results.recommended].months_to_freedom} months</span> from now!
+                    That's <span className="font-bold text-blue-600">{results.strategies[results.recommended].months_to_freedom} months</span> from now
                   </p>
                 </div>
               </div>
               
               <div className="border-t-2 border-gray-200 pt-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                  💰 Got a Bonus or Windfall?
+                  Got a Bonus or Windfall?
                 </h3>
                 <p className="text-gray-600 text-center mb-6">
-                  See how a one-time extra payment accelerates your debt freedom!
+                  See how a one-time extra payment accelerates your debt freedom
                 </p>
                 
                 <div className="max-w-md mx-auto">
@@ -533,7 +619,7 @@ function App() {
                         Calculating...
                       </span>
                     ) : (
-                      '⚡ Calculate Impact'
+                      'Calculate Impact'
                     )}
                   </button>
                 </div>
@@ -541,7 +627,7 @@ function App() {
                 {bonusResult && (
                   <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-300">
                     <h4 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                      ✨ Impact of £{bonusAmount.toLocaleString()} Extra Payment
+                      Impact of £{bonusAmount.toLocaleString()} Extra Payment
                     </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -570,21 +656,21 @@ function App() {
                       <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-green-300">
                         <span className="text-sm font-medium text-gray-700">Time Saved:</span>
                         <span className="text-xl font-bold text-green-600">
-                          {bonusResult.savings.months_saved} months ⚡
+                          {bonusResult.savings.months_saved} months
                         </span>
                       </div>
                       
                       <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-green-300">
                         <span className="text-sm font-medium text-gray-700">Interest Saved:</span>
                         <span className="text-xl font-bold text-green-600">
-                          £{bonusResult.savings.interest_saved.toFixed(2)} 💰
+                          £{bonusResult.savings.interest_saved.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     
                     <div className="mt-6 text-center">
                       <p className="text-lg font-bold text-green-700">
-                        New Freedom Date: {calculateFreedomDate(bonusResult.accelerated.months)} 🎉
+                        New Freedom Date: {calculateFreedomDate(bonusResult.accelerated.months)}
                       </p>
                     </div>
                   </div>
@@ -595,10 +681,10 @@ function App() {
             {/* Budget Scenario Comparison */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                💰 What If You Paid More?
+                What If You Paid More?
               </h3>
               <p className="text-gray-600 mb-6">
-                See how increasing your monthly payment accelerates your debt freedom!
+                See how increasing your monthly payment accelerates your debt freedom
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -642,13 +728,13 @@ function App() {
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-sm font-medium text-green-800">Time Saved:</span>
                               <span className="font-bold text-green-700">
-                                {timeSaved} months ⚡
+                                {timeSaved} months
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-green-800">Interest Saved:</span>
                               <span className="font-bold text-green-700">
-                                £{interestSaved.toFixed(2)} 💰
+                                £{interestSaved.toFixed(2)}
                               </span>
                             </div>
                           </div>
@@ -669,8 +755,7 @@ function App() {
               
               <div className="mt-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
                 <p className="text-sm text-gray-700">
-                  <strong>💡 Pro Tip:</strong> Even small increases make a big difference! 
-                  Paying just £100 more per month could save you months of payments and hundreds in interest.
+                  <strong>Pro Tip:</strong> Even small increases make a big difference. Paying just £100 more per month could save you months of payments and hundreds in interest.
                 </p>
               </div>
             </div>
@@ -678,7 +763,7 @@ function App() {
             {/* Timeline Chart */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                📈 Debt Payoff Timeline
+                Debt Payoff Timeline
               </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={prepareTimelineData()}>
@@ -726,7 +811,7 @@ function App() {
             {/* Comparison Chart */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                📊 Strategy Comparison
+                Strategy Comparison
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
@@ -759,7 +844,7 @@ function App() {
             {/* SHAP Explanations */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                🔍 Why This Order? (AI Explanation)
+                Why This Order? (Detailed Explanation)
               </h3>
               {results.explanations.map((exp: Explanation, idx: number) => (
                 <div key={idx} className="mb-4 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
@@ -777,7 +862,7 @@ function App() {
             {/* Payment Schedule */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                📅 Your Monthly Payment Plan
+                Your Monthly Payment Plan
               </h3>
               <p className="text-gray-600 mb-6">
                 Follow this exact plan each month. We show the first 12 months below.
@@ -800,7 +885,7 @@ function App() {
                         <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                           <div className="flex items-center gap-3">
                             {payment.paid_off && (
-                              <span className="text-green-500 text-xl">✅</span>
+                              <span className="text-green-500 text-xl">✓</span>
                             )}
                             <div>
                               <p className="font-medium text-gray-900">
@@ -808,7 +893,7 @@ function App() {
                               </p>
                               <p className="text-sm text-gray-600">
                                 Remaining: £{payment.remaining_balance.toLocaleString()}
-                                {payment.paid_off && <span className="text-green-600 font-bold ml-2">PAID OFF!</span>}
+                                {payment.paid_off && <span className="text-green-600 font-bold ml-2">PAID OFF</span>}
                               </p>
                             </div>
                           </div>
@@ -833,10 +918,10 @@ function App() {
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border-2 border-green-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  🎯 Ready to become debt-free in {results.strategies[results.recommended].months_to_freedom} months?
+                  Ready to become debt-free in {results.strategies[results.recommended].months_to_freedom} months?
                 </h3>
                 <p className="text-gray-700 mb-4">
-                  You'll save £{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)} compared to paying smallest debts first!
+                  You'll save £{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)} compared to paying smallest debts first
                 </p>
                 <div className="flex gap-4">
                   <button 
@@ -847,13 +932,13 @@ function App() {
                     })}
                     className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    📄 Download as PDF
+                    Download as PDF
                   </button>
                   <button 
                     onClick={() => setShowEmailDialog(true)}
                     className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
                   >
-                    📧 Email My Plan
+                    Email My Plan
                   </button>
                 </div>
               </div>
@@ -866,10 +951,10 @@ function App() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                📧 Email Your Plan
+                Email Your Plan
               </h3>
               <p className="text-gray-600 mb-6">
-                We'll send your personalized debt freedom plan to your email!
+                We'll send your personalized debt freedom plan to your email
               </p>
               
               <div className="space-y-4">
@@ -906,7 +991,7 @@ function App() {
                   disabled={sendingEmail}
                   className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {sendingEmail ? '📤 Sending...' : '📧 Send Email'}
+                  {sendingEmail ? 'Sending...' : 'Send Email'}
                 </button>
                 <button
                   onClick={() => {
@@ -923,12 +1008,16 @@ function App() {
           </div>
         )}
 
-        <div className="text-center mt-12 text-gray-600">
-          <p className="text-sm">
-            Built by Kanyinsola Ogunbanjo | MSc FinTech
+        {/* Footer */}
+        <div className="text-center mt-12 py-8 border-t border-gray-300">
+          <p className="text-sm text-gray-700 font-semibold mb-1">
+            Built by Kanyinsola Ogunbanjo, MSc FinTech
           </p>
-          <p className="text-xs mt-1">
-            Using Explainable AI to help people make smarter financial decisions
+          <p className="text-xs text-gray-600 mb-3">
+            University of Birmingham
+          </p>
+          <p className="text-xs text-gray-500">
+            Powered by Explainable Technology & Proven Debt Optimization Algorithms
           </p>
         </div>
       </div>
