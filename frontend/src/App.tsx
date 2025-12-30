@@ -97,7 +97,7 @@ function App() {
     setLoading(true)
     
     try {
-      const response = await fetch('http://127.0.0.1:8000/optimize', {
+      const response = await fetch('https://debtclear-ai.onrender.com/optimize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ function App() {
     try {
       const validDebts = debts.filter(d => d.balance > 0 && d.apr >= 0)
       
-      const response = await fetch('http://127.0.0.1:8000/calculate-bonus-impact', {
+      const response = await fetch('https://debtclear-ai.onrender.com/calculate-bonus-impact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
