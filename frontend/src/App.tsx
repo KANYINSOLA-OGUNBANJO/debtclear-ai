@@ -1,4 +1,5 @@
-import { useState } from 'react'
+✅ HERE'S YOUR COMPLETE CLEANED APP.TSX:
+typescriptimport { useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
@@ -113,7 +114,7 @@ function App() {
         setResults(data)
         setBonusResult(null)
         
-        // 🎉 TRIGGER CONFETTI!
+        // Trigger confetti animation
         setTimeout(() => {
           confetti({
             particleCount: 100,
@@ -128,7 +129,7 @@ function App() {
         alert('Error: ' + data.error)
       }
     } catch (error) {
-      alert('Failed to connect to AI backend. Make sure the backend is running!')
+      alert('Failed to connect to backend. Make sure the server is running!')
       console.error(error)
     } finally {
       setLoading(false)
@@ -167,15 +168,15 @@ function App() {
       const success = await sendEmail(emailData)
       
       if (success) {
-        alert('✅ Email sent successfully! Check your inbox.')
+        alert('Email sent successfully! Check your inbox.')
         setShowEmailDialog(false)
         setUserName('')
         setUserEmail('')
       } else {
-        alert('❌ Failed to send email. Please try again.')
+        alert('Failed to send email. Please try again.')
       }
     } catch (error) {
-      alert('❌ Failed to send email. Please try again.')
+      alert('Failed to send email. Please try again.')
       console.error(error)
     } finally {
       setSendingEmail(false)
@@ -272,7 +273,7 @@ function App() {
       if (data.success) {
         setBonusResult(data.result)
         
-        // 🎉 MINI CONFETTI FOR BONUS!
+        // Trigger confetti for bonus calculation
         confetti({
           particleCount: 50,
           spread: 60,
@@ -1012,9 +1013,6 @@ function App() {
         <div className="text-center mt-12 py-8 border-t border-gray-300">
           <p className="text-sm text-gray-700 font-semibold mb-1">
             Built by Kanyinsola Ogunbanjo, MSc FinTech
-          </p>
-          <p className="text-xs text-gray-600 mb-3">
-            University of Birmingham
           </p>
           <p className="text-xs text-gray-500">
             Powered by Explainable Technology & Proven Debt Optimization Algorithms
