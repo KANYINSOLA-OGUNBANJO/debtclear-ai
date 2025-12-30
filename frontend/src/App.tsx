@@ -12,17 +12,6 @@ interface Debt {
   minPayment: number
 }
 
-interface Strategy {
-  months_to_freedom: number
-  total_interest: number
-  priority_order: number[]
-  timeline: Array<{
-    month: number
-    remaining_balance: number
-    interest_this_month: number
-  }>
-}
-
 interface Explanation {
   debt_name: string
   rank: number
