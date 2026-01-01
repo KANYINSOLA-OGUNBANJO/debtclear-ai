@@ -105,7 +105,7 @@ class SHAPExplainer:
             'debt_name': debt['name'],
             'rank': rank,
             'explanation': ' '.join(explanation_parts) if explanation_parts else 
-                          f"This debt is ranked #{rank} in our AI's recommendation.",
+                          f"This debt is ranked #{rank} in our recommendation.",
             'shap_values': {
                 name: float(val) for name, val in zip(self.feature_names, shap_vals)
             }
