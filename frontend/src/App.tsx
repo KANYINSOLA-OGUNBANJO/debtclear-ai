@@ -3,6 +3,8 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
 import confetti from 'canvas-confetti'
+// NEW: Add lucide-react icons
+import { TrendingDown, Snowflake, Zap, HelpCircle, X, Info } from 'lucide-react'
 
 interface Debt {
   name: string
@@ -19,6 +21,19 @@ interface Explanation {
   shap_values: Record<string, number>
 }
 
+// NEW: Strategy information interface
+interface StrategyInfo {
+  name: string
+  icon: any
+  color: string
+  short: string
+  description: string
+  example: string
+  pros: string[]
+  cons: string[]
+  bestFor: string
+}
+
 function App() {
   const [debts, setDebts] = useState<Debt[]>([
     { name: '', type: 'credit-card', balance: 0, apr: 0, minPayment: 0 }
@@ -33,6 +48,46 @@ function App() {
   const [bonusAmount, setBonusAmount] = useState(0)
   const [bonusResult, setBonusResult] = useState<any>(null)
   const [calculatingBonus, setCalculatingBonus] = useState(false)
+  // NEW: State for strategy modal
+  const [showStrategyModal, setShowStrategyModal] = useState(false)
+  const [activeStrategyTab, setActiveStrategyTab] = useState<'avalanche' | 'snowball' | 'hybrid'>('avalanche')
+
+  // NEW: Strategy definitions
+  const strategyInfo: Record<string, StrategyInfo> = {
+    avalanche: {
+      name: 'Avalanche Method',
+      icon: TrendingDown,
+      color: 'blue',
+      short: 'Pay highest interest rate first',
+      description: 'Focus on debts with the highest interest rates first while making minimum payments on others. This mathematically optimal approach saves you the most money in interest charges over time.',
+      example: 'Credit Card (24% APR) → Personal Loan (12%) → Car Loan (5%)',
+      pros: ['Saves the most money in interest', 'Fastest payoff mathematically', 'Most efficient use of money', 'Optimal for high-interest debt'],
+      cons: ['May not see quick wins early on', 'Can feel slow if high-rate debt has large balance', 'Requires discipline'],
+      bestFor: 'People motivated by numbers and maximizing savings. Ideal if you have high-interest credit card debt.'
+    },
+    snowball: {
+      name: 'Snowball Method',
+      icon: Snowflake,
+      color: 'purple',
+      short: 'Pay smallest balance first',
+      description: 'Attack your smallest debt first regardless of interest rate. Once eliminated, roll that payment into the next smallest. Quick psychological wins keep you motivated.',
+      example: 'Store Card (£500) → Credit Card (£3,000) → Car Loan (£8,000)',
+      pros: ['Quick psychological wins', 'Builds confidence and momentum', 'See debts disappear faster', 'Higher success rate due to motivation'],
+      cons: ['May pay more in total interest', 'Not the most mathematically efficient', 'Takes longer overall'],
+      bestFor: 'People who need motivation and quick wins. Best if you struggle with commitment or have multiple small debts.'
+    },
+    hybrid: {
+      name: 'Hybrid Method (Recommended)',
+      icon: Zap,
+      color: 'green',
+      short: 'Best of both approaches',
+      description: 'Start with snowball to knock out 1-2 small debts for quick wins, then switch to avalanche to tackle high-interest debt. Balances psychology and efficiency.',
+      example: 'Small debt (quick win!) → High APR debts → Remaining balances',
+      pros: ['Early wins keep you motivated', 'Still saves significant interest', 'Flexible approach', 'Best of both strategies', 'Recommended by experts'],
+      cons: ['Slightly more complex to plan', 'Requires thoughtful decisions'],
+      bestFor: 'Most people! Combines efficiency of avalanche with motivation of snowball. Ideal for realistic debt payoff.'
+    }
+  }
 
   const addDebt = () => {
     setDebts([...debts, { name: '', type: 'credit-card', balance: 0, apr: 0, minPayment: 0 }])
@@ -278,6 +333,184 @@ function App() {
     }
   }
 
+  // NEW: Strategy Modal Component
+  const StrategyModal = () => {
+    if (!showStrategyModal) return null
+
+    const current = strategyInfo[activeStrategyTab]
+    const Icon = current.icon
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto my-8">
+          {/* Header */}
+          <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between z-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Debt Payoff Strategies Explained</h2>
+              <p className="text-gray-600 mt-1">Understanding your options for becoming debt-free</p>
+            </div>
+            <button
+              onClick={() => setShowStrategyModal(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Strategy Tabs */}
+          <div className="grid grid-cols-3 gap-4 p-6 bg-gray-50">
+            {(['avalanche', 'snowball', 'hybrid'] as const).map((key) => {
+              const info = strategyInfo[key]
+              const TabIcon = info.icon
+              const isActive = activeStrategyTab === key
+              
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveStrategyTab(key)}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    isActive
+                      ? `border-${info.color}-500 bg-${info.color}-50 shadow-lg transform scale-105`
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-full bg-${info.color}-500 flex items-center justify-center mb-3 mx-auto`}>
+                    <TabIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm">{info.name}</h3>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Content */}
+          <div className="p-8">
+            {/* Definition */}
+            <div className={`bg-${current.color}-50 border-l-4 border-${current.color}-500 p-6 rounded-r-xl mb-6`}>
+              <div className="flex items-start gap-4">
+                <div className={`bg-${current.color}-500 p-3 rounded-lg flex-shrink-0`}>
+                  <Icon className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{current.short}</h3>
+                  <p className="text-gray-700 leading-relaxed">{current.description}</p>
+                  <div className="mt-3 pt-3 border-t border-gray-300">
+                    <p className="text-sm font-semibold text-gray-800">Example Order:</p>
+                    <p className="text-sm text-gray-700">{current.example}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pros and Cons */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              {/* Pros */}
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-2xl">✓</span> Advantages
+                </h4>
+                <ul className="space-y-2">
+                  {current.pros.map((pro, index) => (
+                    <li key={index} className="flex gap-2 text-gray-700 text-sm">
+                      <span className="text-green-600 font-bold">•</span>
+                      <span>{pro}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Cons */}
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-6">
+                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-2xl">⚠</span> Trade-offs
+                </h4>
+                <ul className="space-y-2">
+                  {current.cons.map((con, index) => (
+                    <li key={index} className="flex gap-2 text-gray-700 text-sm">
+                      <span className="text-orange-600 font-bold">•</span>
+                      <span>{con}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Best For */}
+            <div className={`bg-${current.color}-50 border-2 border-${current.color}-500 rounded-xl p-6`}>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">✨ Best For:</h4>
+              <p className="text-gray-700 leading-relaxed">{current.bestFor}</p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-gray-200 p-6 bg-gray-50">
+            <p className="text-sm text-gray-600 text-center mb-4">
+              💡 <strong>Pro tip:</strong> Our AI uses the Hybrid method (recommended) to give you both quick wins AND maximum savings!
+            </p>
+            <button
+              onClick={() => setShowStrategyModal(false)}
+              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+            >
+              Got It! Calculate My Plan
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // NEW: Strategy Cards Component (shows before calculation)
+  const StrategyCards = () => {
+    return (
+      <div className="max-w-4xl mx-auto mb-8 bg-white rounded-2xl shadow-2xl p-8">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-4">
+            <Info className="w-4 h-4" />
+            <span className="text-sm font-semibold">HOW WE CALCULATE YOUR PLAN</span>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            We Compare 3 Proven Debt Payoff Strategies
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Our AI analyzes your debts using three different approaches and recommends the best one for you
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-6">
+          {(['avalanche', 'snowball', 'hybrid'] as const).map((key) => {
+            const info = strategyInfo[key]
+            const Icon = info.icon
+            
+            return (
+              <div key={key} className="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 border-2 border-gray-200 hover:border-blue-300">
+                <div className={`w-14 h-14 rounded-full bg-${info.color}-500 flex items-center justify-center mb-4`}>
+                  <Icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{info.name}</h3>
+                <p className="text-sm text-gray-600 mb-3 font-semibold">{info.short}</p>
+                <p className="text-sm text-gray-700 leading-relaxed mb-4">{info.description}</p>
+                <div className="pt-4 border-t border-gray-200">
+                  <p className="text-xs font-semibold text-gray-700 mb-1">EXAMPLE:</p>
+                  <p className="text-xs text-gray-600">{info.example}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="text-center">
+          <button
+            onClick={() => setShowStrategyModal(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+          >
+            <HelpCircle className="w-5 h-5" />
+            Learn More About Each Strategy
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
@@ -307,6 +540,9 @@ function App() {
             </span>
           </div>
         </div>
+
+        {/* NEW: Strategy Education Cards - shown BEFORE form (only if no results yet) */}
+        {!results && <StrategyCards />}
 
         {/* How It Works Section */}
         <div className="max-w-4xl mx-auto mb-8 bg-white rounded-2xl shadow-2xl p-8">
@@ -517,9 +753,32 @@ function App() {
             
             {/* Strategy Comparison Cards */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Your Personalized Debt Freedom Plan
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-900">
+                  Your Personalized Debt Freedom Plan
+                </h2>
+                {/* NEW: Why this strategy button */}
+                <button
+                  onClick={() => setShowStrategyModal(true)}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  Why this strategy?
+                </button>
+              </div>
+
+              {/* NEW: Quick strategy explanation */}
+              <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">Recommended: {strategyInfo[results.recommended]?.name}</p>
+                    <p className="text-gray-700 leading-relaxed text-sm">
+                      {strategyInfo[results.recommended]?.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {Object.entries(results.strategies).map(([name, strategy]: [string, any]) => (
@@ -549,8 +808,7 @@ function App() {
                 ))}
               </div>
             </div>
-
-            {/* Debt Freedom Date + Bonus Calculator */}
+             {/* Debt Freedom Date + Bonus Calculator */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-3">
@@ -751,9 +1009,18 @@ function App() {
 
             {/* Timeline Chart */}
             <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Debt Payoff Timeline
-              </h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Debt Payoff Timeline
+                </h3>
+                {/* NEW: Learn more button */}
+                <button
+                  onClick={() => setShowStrategyModal(true)}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                >
+                  Learn about strategies →
+                </button>
+              </div>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={prepareTimelineData()}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -997,13 +1264,16 @@ function App() {
           </div>
         )}
 
+        {/* NEW: Strategy Modal */}
+        <StrategyModal />
+
         {/* Footer */}
         <div className="text-center mt-12 py-8 border-t border-gray-300">
           <p className="text-sm text-gray-700 font-semibold mb-1">
             Built by Kanyinsola Ogunbanjo, MSc FinTech
           </p>
           <p className="text-xs text-gray-500">
-            Powered by Explainable Technology & Proven Debt Optimization Algorithms
+            Powered by Explainable AI & Proven Debt Optimization Algorithms
           </p>
         </div>
       </div>
