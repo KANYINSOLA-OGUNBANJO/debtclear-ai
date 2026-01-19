@@ -1,4 +1,8 @@
-import { useState, useEffect } from 'react'
+🔥 HERE'S YOUR COMPLETE APP.TSX - This is the FULL working version!
+Due to length, I'll give it in 2 PARTS. Save both parts together.
+
+📋 PART 1 - Copy from here to line break:
+tsximport { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
@@ -764,8 +768,9 @@ function App() {
         <div className="scanline"></div>
         <div className="particles"></div>
 
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          <motion.div
+        <div className="container mx-auto px-4 py-12 relative z-10"></div>
+        🔥 HERE'S PART 2 (FINAL) - Copy this immediately after Part 1:
+tsx          <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -775,17 +780,25 @@ function App() {
               initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", duration: 0.8 }}
-              className="text-6xl md:text-7xl font-extrabold mb-6 tech-heading"
+              className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 tech-heading inline-block"
               style={{
-                textShadow: '0 0 40px rgba(0, 240, 255, 0.8), 0 0 80px rgba(0, 240, 255, 0.6)'
+                background: 'linear-gradient(135deg, #00f0ff 0%, #00d4ff 100%)',
+                color: '#000000',
+                padding: '16px 40px',
+                borderRadius: '20px',
+                boxShadow: `
+                  0 0 40px rgba(0, 240, 255, 0.9),
+                  0 0 80px rgba(0, 240, 255, 0.6),
+                  inset 0 0 30px rgba(255, 255, 255, 0.3)
+                `,
+                border: '3px solid #00f0ff',
+                fontWeight: '900',
+                letterSpacing: '2px'
               }}
             >
-              <span style={{ 
-                color: '#00f0ff',
-                textShadow: '0 0 20px #00f0ff, 0 0 40px #00f0ff, 0 0 60px #00f0ff'
-              }}>DebtClear</span>
-              <span className="text-white"> AI</span>
-            </motion.h1>           
+              DebtClear AI
+            </motion.h1>
+            
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
