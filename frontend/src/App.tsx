@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
 import confetti from 'canvas-confetti'
-// NEW: Add lucide-react icons
-import { TrendingDown, Snowflake, Zap, HelpCircle, X, Info } from 'lucide-react'
+import { TrendingDown, Snowflake, Zap, HelpCircle, X, Info, Sparkles, ArrowRight, CheckCircle, Terminal, Code, Cpu, Activity } from 'lucide-react'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { useRef } from 'react'
 
 interface Debt {
   name: string
@@ -21,7 +22,6 @@ interface Explanation {
   shap_values: Record<string, number>
 }
 
-// NEW: Strategy information interface
 interface StrategyInfo {
   name: string
   icon: any
@@ -48,16 +48,32 @@ function App() {
   const [bonusAmount, setBonusAmount] = useState(0)
   const [bonusResult, setBonusResult] = useState<any>(null)
   const [calculatingBonus, setCalculatingBonus] = useState(false)
-  // NEW: State for strategy modal
   const [showStrategyModal, setShowStrategyModal] = useState(false)
   const [activeStrategyTab, setActiveStrategyTab] = useState<'avalanche' | 'snowball' | 'hybrid'>('avalanche')
+  const [currentStrategyIndex, setCurrentStrategyIndex] = useState(0)
 
-  // NEW: Strategy definitions
+  const { scrollYProgress } = useScroll()
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
+
+  useEffect(() => {
+    const particlesContainer = document.querySelector('.particles')
+    if (!particlesContainer) return
+
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement('div')
+      particle.className = 'particle'
+      particle.style.left = `${Math.random() * 100}%`
+      particle.style.animationDelay = `${Math.random() * 20}s`
+      particle.style.animationDuration = `${15 + Math.random() * 10}s`
+      particlesContainer.appendChild(particle)
+    }
+  }, [])
+
   const strategyInfo: Record<string, StrategyInfo> = {
     avalanche: {
       name: 'Avalanche Method',
       icon: TrendingDown,
-      color: 'blue',
+      color: '#ff006e',
       short: 'Pay highest interest rate first',
       description: 'Focus on debts with the highest interest rates first while making minimum payments on others. This mathematically optimal approach saves you the most money in interest charges over time.',
       example: 'Credit Card (24% APR) → Personal Loan (12%) → Car Loan (5%)',
@@ -68,7 +84,7 @@ function App() {
     snowball: {
       name: 'Snowball Method',
       icon: Snowflake,
-      color: 'purple',
+      color: '#b388ff',
       short: 'Pay smallest balance first',
       description: 'Attack your smallest debt first regardless of interest rate. Once eliminated, roll that payment into the next smallest. Quick psychological wins keep you motivated.',
       example: 'Store Card (£500) → Credit Card (£3,000) → Car Loan (£8,000)',
@@ -77,9 +93,9 @@ function App() {
       bestFor: 'People who need motivation and quick wins. Best if you struggle with commitment or have multiple small debts.'
     },
     hybrid: {
-      name: 'Hybrid Method (Recommended)',
+      name: 'Hybrid Method',
       icon: Zap,
-      color: 'green',
+      color: '#00ff88',
       short: 'Best of both approaches',
       description: 'Start with snowball to knock out 1-2 small debts for quick wins, then switch to avalanche to tackle high-interest debt. Balances psychology and efficiency.',
       example: 'Small debt (quick win!) → High APR debts → Remaining balances',
@@ -87,6 +103,22 @@ function App() {
       cons: ['Slightly more complex to plan', 'Requires thoughtful decisions'],
       bestFor: 'Most people! Combines efficiency of avalanche with motivation of snowball. Ideal for realistic debt payoff.'
     }
+  }
+
+  const AnimatedSection = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => {
+    const ref = useRef(null)
+    const isInView = useInView(ref, { once: true, margin: "-100px" })
+
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 50 }}
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        transition={{ duration: 0.6, delay, ease: "easeOut" }}
+      >
+        {children}
+      </motion.div>
+    )
   }
 
   const addDebt = () => {
@@ -157,15 +189,14 @@ function App() {
         setResults(data)
         setBonusResult(null)
         
-        // Trigger confetti animation
         setTimeout(() => {
           confetti({
             particleCount: 100,
             spread: 70,
-            origin: { y: 0.6 }
+            origin: { y: 0.6 },
+            colors: ['#00f0ff', '#00ff88', '#b388ff']
           })
           
-          // Scroll to results
           document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
       } else {
@@ -316,11 +347,11 @@ function App() {
       if (data.success) {
         setBonusResult(data.result)
         
-        // Trigger confetti for bonus calculation
         confetti({
           particleCount: 50,
           spread: 60,
-          origin: { y: 0.7 }
+          origin: { y: 0.7 },
+          colors: ['#00f0ff', '#00ff88', '#b388ff']
         })
       } else {
         alert('Error calculating bonus impact: ' + data.error)
@@ -333,7 +364,6 @@ function App() {
     }
   }
 
-  // NEW: Strategy Modal Component
   const StrategyModal = () => {
     if (!showStrategyModal) return null
 
@@ -341,943 +371,1047 @@ function App() {
     const Icon = current.icon
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto my-8">
-          {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between z-10">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto modal-backdrop"
+        onClick={() => setShowStrategyModal(false)}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className="glass-card rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto my-8 border border-white/10"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="sticky top-0 bg-[#1a1a1a]/95 backdrop-blur-xl border-b border-white/10 p-6 flex items-center justify-between z-10 rounded-t-2xl">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900">Debt Payoff Strategies Explained</h2>
-              <p className="text-gray-600 mt-1">Understanding your options for becoming debt-free</p>
+              <h2 className="text-3xl font-bold text-white tech-heading flex items-center gap-3">
+                <Terminal className="w-8 h-8 text-[#00f0ff]" />
+                Debt Payoff Strategies
+              </h2>
+              <p className="text-gray-400 mt-1">Understanding your algorithmic options</p>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => setShowStrategyModal(false)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-white/5 rounded-lg transition-colors border border-white/10"
             >
-              <X className="w-6 h-6 text-gray-500" />
-            </button>
+              <X className="w-6 h-6 text-gray-400" />
+            </motion.button>
           </div>
 
-          {/* Strategy Tabs */}
-          <div className="grid grid-cols-3 gap-4 p-6 bg-gray-50">
+          <div className="grid grid-cols-3 gap-4 p-6 bg-[#111111]/50">
             {(['avalanche', 'snowball', 'hybrid'] as const).map((key) => {
               const info = strategyInfo[key]
               const TabIcon = info.icon
               const isActive = activeStrategyTab === key
               
               return (
-                <button
+                <motion.button
                   key={key}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveStrategyTab(key)}
-                  className={`p-4 rounded-xl border-2 transition-all ${
+                  className={`p-4 rounded-xl border transition-all ${
                     isActive
-                      ? `border-${info.color}-500 bg-${info.color}-50 shadow-lg transform scale-105`
-                      : 'border-gray-200 bg-white hover:border-gray-300'
+                      ? 'bg-white/5 glow-border-cyan'
+                      : 'border-white/10 hover:border-white/20 hover:bg-white/5'
                   }`}
+                  style={isActive ? { borderColor: info.color, boxShadow: `0 0 20px ${info.color}40` } : {}}
                 >
-                  <div className={`w-12 h-12 rounded-full bg-${info.color}-500 flex items-center justify-center mb-3 mx-auto`}>
-                    <TabIcon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-sm">{info.name}</h3>
-                </button>
+                  <motion.div
+                    animate={{ rotate: isActive ? 360 : 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-12 h-12 rounded-lg flex items-center justify-center mb-3 mx-auto"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${info.color}20, ${info.color}10)`,
+                      border: `1px solid ${info.color}40`
+                    }}
+                  >
+                    <TabIcon className="w-6 h-6" style={{ color: info.color }} />
+                  </motion.div>
+                  <h3 className="font-bold text-sm text-white">{info.name}</h3>
+                </motion.button>
               )
             })}
           </div>
 
-          {/* Content */}
           <div className="p-8">
-            {/* Definition */}
-            <div className={`bg-${current.color}-50 border-l-4 border-${current.color}-500 p-6 rounded-r-xl mb-6`}>
-              <div className="flex items-start gap-4">
-                <div className={`bg-${current.color}-500 p-3 rounded-lg flex-shrink-0`}>
-                  <Icon className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{current.short}</h3>
-                  <p className="text-gray-700 leading-relaxed">{current.description}</p>
-                  <div className="mt-3 pt-3 border-t border-gray-300">
-                    <p className="text-sm font-semibold text-gray-800">Example Order:</p>
-                    <p className="text-sm text-gray-700">{current.example}</p>
+            <motion.div
+              key={activeStrategyTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div 
+                className="border-l-4 p-6 rounded-r-xl mb-6 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: `${current.color}10`,
+                  borderColor: current.color
+                }}
+              >
+                <div className="flex items-start gap-4 relative z-10">
+                  <div 
+                    className="p-3 rounded-lg flex-shrink-0"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${current.color}30, ${current.color}20)`,
+                      boxShadow: `0 0 20px ${current.color}40`
+                    }}
+                  >
+                    <Icon className="w-8 h-8" style={{ color: current.color }} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2 mono">{current.short}</h3>
+                    <p className="text-gray-300 leading-relaxed">{current.description}</p>
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <p className="text-sm font-semibold text-gray-400 mb-1">EXAMPLE ORDER:</p>
+                      <p className="text-sm text-gray-300 mono">{current.example}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Pros and Cons */}
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              {/* Pros */}
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">✓</span> Advantages
-                </h4>
-                <ul className="space-y-2">
-                  {current.pros.map((pro, index) => (
-                    <li key={index} className="flex gap-2 text-gray-700 text-sm">
-                      <span className="text-green-600 font-bold">•</span>
-                      <span>{pro}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-[#00ff88]/5 border border-[#00ff88]/20 rounded-xl p-6"
+                >
+                  <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-[#00ff88]" /> Advantages
+                  </h4>
+                  <ul className="space-y-2">
+                    {current.pros.map((pro, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex gap-2 text-gray-300 text-sm"
+                      >
+                        <span className="text-[#00ff88] font-bold">▹</span>
+                        <span>{pro}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-[#ff006e]/5 border border-[#ff006e]/20 rounded-xl p-6"
+                >
+                  <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <Info className="w-5 h-5 text-[#ff006e]" /> Trade-offs
+                  </h4>
+                  <ul className="space-y-2">
+                    {current.cons.map((con, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex gap-2 text-gray-300 text-sm"
+                      >
+                        <span className="text-[#ff006e] font-bold">▹</span>
+                        <span>{con}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
               </div>
 
-              {/* Cons */}
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">⚠</span> Trade-offs
+              <div 
+                className="border rounded-xl p-6"
+                style={{ 
+                  backgroundColor: `${current.color}10`,
+                  borderColor: `${current.color}40`
+                }}
+              >
+                <h4 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" style={{ color: current.color }} /> Best For:
                 </h4>
-                <ul className="space-y-2">
-                  {current.cons.map((con, index) => (
-                    <li key={index} className="flex gap-2 text-gray-700 text-sm">
-                      <span className="text-orange-600 font-bold">•</span>
-                      <span>{con}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-gray-300 leading-relaxed">{current.bestFor}</p>
               </div>
-            </div>
-
-            {/* Best For */}
-            <div className={`bg-${current.color}-50 border-2 border-${current.color}-500 rounded-xl p-6`}>
-              <h4 className="text-lg font-bold text-gray-900 mb-2">✨ Best For:</h4>
-              <p className="text-gray-700 leading-relaxed">{current.bestFor}</p>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Footer */}
-          <div className="border-t border-gray-200 p-6 bg-gray-50">
-            <p className="text-sm text-gray-600 text-center mb-4">
-              💡 <strong>Pro tip:</strong> Our AI uses the Hybrid method (recommended) to give you both quick wins AND maximum savings!
+          <div className="border-t border-white/10 p-6 bg-[#111111]/50">
+            <p className="text-sm text-gray-400 text-center mb-4">
+              <Code className="w-4 h-4 inline mr-2" />
+              Our AI uses the <span className="text-[#00ff88] font-mono">Hybrid</span> method for optimal results
             </p>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setShowStrategyModal(false)}
-              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+              style={{
+                background: 'linear-gradient(135deg, #00f0ff 0%, #00d4ff 100%)',
+                color: '#000',
+                boxShadow: '0 0 30px rgba(0, 240, 255, 0.7)',
+                border: '2px solid #00f0ff',
+                fontWeight: '900'
+              }}
+              className="w-full px-6 py-3 rounded-xl font-bold"
             >
-              Got It! Calculate My Plan
-            </button>
+              INITIALIZE CALCULATION
+            </motion.button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     )
   }
 
-  // NEW: Strategy Cards Component (shows before calculation)
   const StrategyCards = () => {
+    const strategies = ['avalanche', 'snowball', 'hybrid'] as const
+
+    const nextStrategy = () => {
+      setCurrentStrategyIndex((prev) => (prev + 1) % 3)
+    }
+
+    const prevStrategy = () => {
+      setCurrentStrategyIndex((prev) => (prev - 1 + 3) % 3)
+    }
+
     return (
-      <div className="max-w-4xl mx-auto mb-8 bg-white rounded-2xl shadow-2xl p-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-4">
-            <Info className="w-4 h-4" />
-            <span className="text-sm font-semibold">HOW WE CALCULATE YOUR PLAN</span>
+      <AnimatedSection>
+        <div className="max-w-6xl mx-auto mb-12 glass-card rounded-2xl p-8 relative overflow-hidden border border-white/10">
+          <div className="text-center mb-10 relative z-10">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", duration: 0.6 }}
+              className="inline-flex items-center gap-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 text-[#00f0ff] px-6 py-3 rounded-full mb-6 backdrop-blur-sm"
+            >
+              <Cpu className="w-5 h-5" />
+              <span className="text-sm font-bold mono">ALGORITHM COMPARISON</span>
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight tech-heading"
+            >
+              We Analyze <span className="neon-text-cyan">3 Proven</span> Debt Strategies
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-gray-400 text-lg max-w-2xl mx-auto"
+            >
+              Advanced AI processes your debt portfolio using multiple optimization algorithms
+            </motion.p>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            We Compare 3 Proven Debt Payoff Strategies
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Our AI analyzes your debts using three different approaches and recommends the best one for you
-          </p>
-        </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
-          {(['avalanche', 'snowball', 'hybrid'] as const).map((key) => {
-            const info = strategyInfo[key]
-            const Icon = info.icon
-            
-            return (
-              <div key={key} className="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 border-2 border-gray-200 hover:border-blue-300">
-                <div className={`w-14 h-14 rounded-full bg-${info.color}-500 flex items-center justify-center mb-4`}>
-                  <Icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{info.name}</h3>
-                <p className="text-sm text-gray-600 mb-3 font-semibold">{info.short}</p>
-                <p className="text-sm text-gray-700 leading-relaxed mb-4">{info.description}</p>
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-xs font-semibold text-gray-700 mb-1">EXAMPLE:</p>
-                  <p className="text-xs text-gray-600">{info.example}</p>
-                </div>
+          <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8 relative z-10">
+            {strategies.map((key, index) => {
+              const info = strategyInfo[key]
+              const Icon = info.icon
+              
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.15, type: "spring" }}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  className="glass-card-hover rounded-xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer"
+                >
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ 
+                      background: `radial-gradient(circle at top right, ${info.color}15, transparent 70%)`
+                    }}
+                  />
+                  
+                  <motion.div
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-16 h-16 rounded-lg flex items-center justify-center mb-4 relative z-10"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${info.color}30, ${info.color}20)`,
+                      border: `1px solid ${info.color}40`,
+                      boxShadow: `0 0 20px ${info.color}30`
+                    }}
+                  >
+                    <Icon className="w-9 h-9" style={{ color: info.color }} />
+                  </motion.div>
+                  
+                  <h3 className="text-2xl font-bold text-white mb-2 tech-heading">{info.name}</h3>
+                  <p className="text-sm text-gray-400 font-semibold mb-3 mono">{info.short}</p>
+                  <p className="text-sm text-gray-300 leading-relaxed mb-4">{info.description}</p>
+                  
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-xs font-bold text-gray-400 mb-1 mono">EXAMPLE:</p>
+                    <p className="text-xs text-gray-400 mono">{info.example}</p>
+                  </div>
+
+                  <motion.div
+                    className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                    whileHover={{ x: 5 }}
+                  >
+                    <ArrowRight className="w-5 h-5 text-gray-400" />
+                  </motion.div>
+                </motion.div>
+              )
+            })}
+          </div>
+
+          <div className="md:hidden relative mb-8">
+            <div className="overflow-hidden">
+              <motion.div
+                animate={{ x: `-${currentStrategyIndex * 100}%` }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="flex"
+              >
+                {strategies.map((key) => {
+                  const info = strategyInfo[key]
+                  const Icon = info.icon
+                  
+                  return (
+                    <div key={key} className="w-full flex-shrink-0 px-2">
+                      <div className="glass-card rounded-xl p-6 border border-white/10">
+                        <div 
+                          className="w-16 h-16 rounded-lg flex items-center justify-center mb-4"
+                          style={{ 
+                            background: `linear-gradient(135deg, ${info.color}30, ${info.color}20)`,
+                            border: `1px solid ${info.color}40`
+                          }}
+                        >
+                          <Icon className="w-9 h-9" style={{ color: info.color }} />
+                        </div>
+                        
+                        <h3 className="text-2xl font-bold text-white mb-2 tech-heading">{info.name}</h3>
+                        <p className="text-sm text-gray-400 font-semibold mb-3 mono">{info.short}</p>
+                        <p className="text-sm text-gray-300 leading-relaxed mb-4">{info.description}</p>
+                        
+                        <div className="pt-4 border-t border-white/10">
+                          <p className="text-xs font-bold text-gray-400 mb-1 mono">EXAMPLE:</p>
+                          <p className="text-xs text-gray-400 mono">{info.example}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </motion.div>
+            </div>
+
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={prevStrategy}
+                className="w-10 h-10 rounded-lg glass-card border border-white/10 flex items-center justify-center hover:border-[#00f0ff]/50 transition-all"
+              >
+                <ArrowRight className="w-5 h-5 text-gray-400 transform rotate-180" />
+              </motion.button>
+              
+              <div className="flex gap-2">
+                {strategies.map((_, index) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => setCurrentStrategyIndex(index)}
+                    className={`h-2 rounded-full transition-all ${
+                      index === currentStrategyIndex ? 'w-8 bg-[#00f0ff]' : 'w-2 bg-white/20'
+                    }`}
+                    whileHover={{ scale: 1.2 }}
+                  />
+                ))}
               </div>
-            )
-          })}
-        </div>
+              
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={nextStrategy}
+                className="w-10 h-10 rounded-lg glass-card border border-white/10 flex items-center justify-center hover:border-[#00f0ff]/50 transition-all"
+              >
+                <ArrowRight className="w-5 h-5 text-gray-400" />
+              </motion.button>
+            </div>
+          </div>
 
-        <div className="text-center">
-          <button
-            onClick={() => setShowStrategyModal(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
-          >
-            <HelpCircle className="w-5 h-5" />
-            Learn More About Each Strategy
-          </button>
+          <div className="text-center relative z-10">
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0, 240, 255, 0.9)" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowStrategyModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #00f0ff 0%, #00d4ff 100%)',
+                color: '#000',
+                boxShadow: '0 0 30px rgba(0, 240, 255, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.3)',
+                border: '2px solid #00f0ff',
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-bold"
+            >
+              <Terminal className="w-5 h-5" />
+              ACCESS FULL ANALYSIS
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
+          </div>
         </div>
-      </div>
+      </AnimatedSection>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8">
-        
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            DebtClear AI
-          </h1>
-          <p className="text-xl text-gray-600 mb-4">
-            Mathematical Debt Optimization with Transparent Results
-          </p>
-          
-          {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
-            <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold border border-blue-200">
-              MSc FinTech Built
-            </span>
-            <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-semibold border border-green-200">
-              Bank-Grade Algorithms
-            </span>
-            <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold border border-purple-200">
-              100% Free
-            </span>
-            <span className="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold border border-indigo-200">
-              Privacy First
-            </span>
-          </div>
-        </div>
+    <>
+      <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden">
+        <div className="grid-background"></div>
+        <div className="scanline"></div>
+        <div className="particles"></div>
 
-        {/* NEW: Strategy Education Cards - shown BEFORE form (only if no results yet) */}
-        {!results && <StrategyCards />}
-
-        {/* How It Works Section */}
-        <div className="max-w-4xl mx-auto mb-8 bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-            How Our Calculations Work
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                ✓
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Proven Algorithms</h3>
-                <p className="text-sm text-gray-600">Uses industry-standard Avalanche and Snowball methods, mathematically proven to minimize interest</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                ✓
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Explainable Technology</h3>
-                <p className="text-sm text-gray-600">Powered by SHAP analysis (the same technology banks use) - you see exactly WHY each debt is prioritized</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                ✓
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Compound Interest Math</h3>
-                <p className="text-sm text-gray-600">Calculations based on actual compound interest formulas - the same math your creditors use</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
-                ✓
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Personalized Results</h3>
-                <p className="text-sm text-gray-600">Every calculation is tailored to your exact balances, interest rates, and monthly budget</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Input Form */}
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Enter Your Debts
-          </h2>
-
-          {debts.map((debt, index) => (
-            <div key={index} className="mb-6 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
-              <h3 className="font-semibold text-gray-700 mb-4">
-                Debt #{index + 1}
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Debt Type
-                  </label>
-                  <select
-                    value={debt.type}
-                    onChange={(e) => handleTypeChange(index, e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="credit-card">Credit Card</option>
-                    <option value="store-card">Store Card</option>
-                    <option value="personal-loan">Personal Loan</option>
-                    <option value="car-finance">Car Finance</option>
-                    <option value="payday-loan">Payday Loan</option>
-                    <option value="overdraft">Bank Overdraft</option>
-                    <option value="student-loan">Student Loan</option>
-                    <option value="buy-now-pay-later">Buy Now Pay Later</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Debt Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={debt.name}
-                    onChange={(e) => updateDebt(index, 'name', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., Barclaycard, HSBC Loan"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Balance (£)
-                  </label>
-                  <input
-                    type="number"
-                    value={debt.balance || ''}
-                    onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="2400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Interest Rate (APR %)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={debt.apr || ''}
-                    onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Auto-filled based on type"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Minimum Payment (£)
-                  </label>
-                  <input
-                    type="number"
-                    value={debt.minPayment || ''}
-                    onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="60"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-
-          <button
-            onClick={addDebt}
-            className="w-full mb-6 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+        <div className="container mx-auto px-4 py-12 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
           >
-            + Add Another Debt
-          </button>
-
-          <div className="mb-8 p-6 bg-blue-50 rounded-lg border-2 border-blue-200">
-            <label className="block text-lg font-semibold text-gray-800 mb-3">
-              How much can you pay toward debts each month? (£)
-            </label>
-            <input
-              type="number"
-              value={monthlyBudget || ''}
-              onChange={(e) => setMonthlyBudget(parseFloat(e.target.value) || 0)}
-              className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="500"
-            />
-            <p className="text-sm text-gray-600 mt-2">
-              This is the total amount you can pay across ALL debts each month
-            </p>
-          </div>
-
-          {/* Privacy & Disclaimer Notice */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-300">
-            <div className="flex items-start gap-3 mb-3">
-              <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <h4 className="font-semibold text-gray-900 text-sm mb-1">Your Privacy Matters</h4>
-                <p className="text-xs text-gray-600">We don't store your financial data. All calculations happen securely in real-time and nothing is saved to our servers.</p>
-              </div>
-            </div>
+            <motion.h1
+              initial={{ scale: 0.5 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", duration: 0.8 }}
+              className="text-6xl md:text-7xl font-extrabold mb-6 tech-heading"
+              style={{
+                textShadow: '0 0 40px rgba(0, 240, 255, 0.8), 0 0 80px rgba(0, 240, 255, 0.6)'
+              }}
+            >
+              <span style={{ 
+                color: '#00f0ff',
+                textShadow: '0 0 20px #00f0ff, 0 0 40px #00f0ff, 0 0 60px #00f0ff'
+              }}>DebtClear</span>
+              <span className="text-white"> AI</span>
+            </motion.h1>           
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-xl md:text-2xl text-gray-400 mb-8 font-medium"
+            >
+              Quantum-Powered Debt Optimization <span className="text-[#00ff88]">Engine</span>
+            </motion.p>
             
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <h4 className="font-semibold text-gray-900 text-sm mb-1">Important Note</h4>
-                <p className="text-xs text-gray-600">This tool provides educational guidance based on mathematical optimization. Results are accurate based on the information you provide. Always verify with your creditors and consider consulting a financial advisor for personalized advice.</p>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={calculateOptimization}
-            disabled={loading}
-            className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg font-bold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-3">
-                <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Analyzing your debts...
-              </span>
-            ) : (
-              'Calculate My Optimal Strategy'
-            )}
-          </button>
-        </div>
-
-        {/* Results Section */}
-        {results && (
-          <div id="results" className="max-w-4xl mx-auto mt-8 space-y-8">
-            
-            {/* Strategy Comparison Cards */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-900">
-                  Your Personalized Debt Freedom Plan
-                </h2>
-                {/* NEW: Why this strategy button */}
-                <button
-                  onClick={() => setShowStrategyModal(true)}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
-                >
-                  <HelpCircle className="w-4 h-4" />
-                  Why this strategy?
-                </button>
-              </div>
-
-              {/* NEW: Quick strategy explanation */}
-              <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">Recommended: {strategyInfo[results.recommended]?.name}</p>
-                    <p className="text-gray-700 leading-relaxed text-sm">
-                      {strategyInfo[results.recommended]?.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(results.strategies).map(([name, strategy]: [string, any]) => (
-                  <div
-                    key={name}
-                    className={`p-6 rounded-lg border-2 ${
-                      name === results.recommended
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 bg-gray-50'
-                    }`}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap justify-center gap-4"
+            >
+              {[
+                { text: "MSc FinTech", icon: Terminal, color: "#00f0ff" },
+                { text: "Bank-Grade", icon: Cpu, color: "#00ff88" },
+                { text: "100% Free", icon: Sparkles, color: "#b388ff" },
+                { text: "Privacy First", icon: Activity, color: "#ff006e" }
+              ].map((badge, index) => {
+                const IconComponent = badge.icon
+                return (
+                  <motion.span
+                    key={badge.text}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.7 + index * 0.1, type: "spring" }}
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    className="px-6 py-3 badge-glow rounded-full text-sm font-bold mono flex items-center gap-2"
+                    style={{ color: badge.color }}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-bold text-lg capitalize">{name}</h3>
-                      {name === results.recommended && (
-                        <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
-                          RECOMMENDED
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-3xl font-bold text-gray-900 mb-2">
-                      {strategy.months_to_freedom} months
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      £{strategy.total_interest.toFixed(2)} interest
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-             {/* Debt Freedom Date + Bonus Calculator */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                  Your Debt Freedom Date
-                </h2>
-                <div className="inline-block p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border-2 border-green-300">
-                  <p className="text-sm text-gray-600 mb-2">You'll be completely debt-free by:</p>
-                  <p className="text-4xl font-bold text-green-600 mb-2">
-                    {calculateFreedomDate(results.strategies[results.recommended].months_to_freedom)}
-                  </p>
-                  <p className="text-lg text-gray-700">
-                    That's <span className="font-bold text-blue-600">{results.strategies[results.recommended].months_to_freedom} months</span> from now
-                  </p>
-                </div>
-              </div>
-              
-              <div className="border-t-2 border-gray-200 pt-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                  Got a Bonus or Windfall?
-                </h3>
-                <p className="text-gray-600 text-center mb-6">
-                  See how a one-time extra payment accelerates your debt freedom
-                </p>
-                
-                <div className="max-w-md mx-auto">
-                  <div className="flex gap-3 mb-6">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Extra Payment Amount (£)
-                      </label>
-                      <input
-                        type="number"
-                        value={bonusAmount || ''}
-                        onChange={(e) => setBonusAmount(parseFloat(e.target.value) || 0)}
-                        className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="e.g., 2000"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Tax refund, bonus, gift, inheritance, etc.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <button
-                    onClick={calculateBonusImpact}
-                    disabled={calculatingBonus || bonusAmount <= 0}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  >
-                    {calculatingBonus ? (
-                      <span className="flex items-center justify-center gap-3">
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Calculating...
-                      </span>
-                    ) : (
-                      'Calculate Impact'
-                    )}
-                  </button>
-                </div>
-                
-                {bonusResult && (
-                  <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-300">
-                    <h4 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                      Impact of £{bonusAmount.toLocaleString()} Extra Payment
-                    </h4>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                      <div className="text-center p-4 bg-white rounded-lg border-2 border-gray-200">
-                        <p className="text-sm text-gray-600 mb-1">Original Plan</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          {bonusResult.original.months} months
-                        </p>
-                        <p className="text-sm text-gray-600 mt-2">
-                          £{bonusResult.original.interest.toFixed(2)} interest
-                        </p>
-                      </div>
-                      
-                      <div className="text-center p-4 bg-green-100 rounded-lg border-2 border-green-500">
-                        <p className="text-sm text-green-800 mb-1">With Extra Payment</p>
-                        <p className="text-2xl font-bold text-green-700">
-                          {bonusResult.accelerated.months} months
-                        </p>
-                        <p className="text-sm text-green-800 mt-2">
-                          £{bonusResult.accelerated.interest.toFixed(2)} interest
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-green-300">
-                        <span className="text-sm font-medium text-gray-700">Time Saved:</span>
-                        <span className="text-xl font-bold text-green-600">
-                          {bonusResult.savings.months_saved} months
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-green-300">
-                        <span className="text-sm font-medium text-gray-700">Interest Saved:</span>
-                        <span className="text-xl font-bold text-green-600">
-                          £{bonusResult.savings.interest_saved.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6 text-center">
-                      <p className="text-lg font-bold text-green-700">
-                        New Freedom Date: {calculateFreedomDate(bonusResult.accelerated.months)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+                    <IconComponent className="w-4 h-4" />
+                    {badge.text}
+                  </motion.span>
+                )
+              })}
+            </motion.div>
+          </motion.div>
 
-            {/* Budget Scenario Comparison */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                What If You Paid More?
-              </h3>
-              <p className="text-gray-600 mb-6">
-                See how increasing your monthly payment accelerates your debt freedom
-              </p>
+          {!results && <StrategyCards />}
+
+          <AnimatedSection delay={0.2}>
+            <div className="max-w-5xl mx-auto mb-12 glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+              <motion.h2
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl md:text-4xl font-bold text-white mb-8 text-center relative z-10 tech-heading flex items-center justify-center gap-3"
+              >
+                <Code className="w-8 h-8 text-[#00f0ff]" />
+                How Our <span className="neon-text-cyan">System</span> Works
+              </motion.h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {results.budget_scenarios?.map((scenario: any, index: number) => {
-                  const isBase = index === 0
-                  const timeSaved = isBase ? 0 : results.budget_scenarios[0].months - scenario.months
-                  const interestSaved = isBase ? 0 : results.budget_scenarios[0].interest - scenario.interest
-                  
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                {[
+                  {
+                    icon: Terminal,
+                    color: "#00f0ff",
+                    title: "Proven Algorithms",
+                    desc: "Industry-standard Avalanche and Snowball methods, mathematically proven to minimize interest"
+                  },
+                  {
+                    icon: Cpu,
+                    color: "#00ff88",
+                    title: "Explainable AI",
+                    desc: "Powered by SHAP analysis - the same technology banks use. You see exactly WHY each debt is prioritized"
+                  },
+                  {
+                    icon: Activity,
+                    color: "#b388ff",
+                    title: "Compound Interest Math",
+                    desc: "Calculations based on actual compound interest formulas - the same math your creditors use"
+                  },
+                  {
+                    icon: Sparkles,
+                    color: "#ff006e",
+                    title: "Personalized Results",
+                    desc: "Every calculation is tailored to your exact balances, interest rates, and monthly budget"
+                  }
+                ].map((item, index) => {
+                  const IconComponent = item.icon
                   return (
-                    <div
+                    <motion.div
                       key={index}
-                      className={`p-6 rounded-lg border-2 ${
-                        index === 1
-                          ? 'border-green-500 bg-green-50 transform scale-105'
-                          : 'border-gray-200 bg-gray-50'
-                      }`}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.03, y: -5 }}
+                      className="flex items-start gap-4 p-6 rounded-xl hover-glow transition-all border border-white/5 hover:border-white/20 glass-card-hover"
                     >
-                      <div className="text-center mb-4">
-                        <p className="text-sm text-gray-600 mb-1">
-                          {isBase ? 'Your Current Budget' : `Pay £${scenario.budget - results.budget_scenarios[0].budget} More`}
-                        </p>
-                        <p className="text-3xl font-bold text-gray-900">
-                          £{scenario.budget}
-                          <span className="text-sm text-gray-500">/month</span>
-                        </p>
+                      <motion.div
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.6 }}
+                        className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center"
+                        style={{ 
+                          background: `linear-gradient(135deg, ${item.color}30, ${item.color}20)`,
+                          border: `1px solid ${item.color}40`,
+                          boxShadow: `0 0 20px ${item.color}30`
+                        }}
+                      >
+                        <IconComponent className="w-6 h-6" style={{ color: item.color }} />
+                      </motion.div>
+                      <div>
+                        <h3 className="font-bold text-white mb-2 text-lg">{item.title}</h3>
+                        <p className="text-sm text-gray-400 leading-relaxed">{item.desc}</p>
                       </div>
-                      
-                      <div className="space-y-3 border-t-2 border-gray-200 pt-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Time to Freedom:</span>
-                          <span className="font-bold text-blue-600">{scenario.months} months</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Total Interest:</span>
-                          <span className="font-bold text-red-600">£{scenario.interest.toFixed(2)}</span>
-                        </div>
-                        
-                        {!isBase && (
-                          <div className="mt-4 pt-4 border-t-2 border-green-200 bg-green-100 -mx-6 px-6 py-3 rounded-b-lg">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-green-800">Time Saved:</span>
-                              <span className="font-bold text-green-700">
-                                {timeSaved} months
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-green-800">Interest Saved:</span>
-                              <span className="font-bold text-green-700">
-                                £{interestSaved.toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {index === 1 && (
-                        <div className="mt-4 text-center">
-                          <span className="inline-block px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
-                            BEST VALUE
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    </motion.div>
                   )
                 })}
               </div>
-              
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
-                <p className="text-sm text-gray-700">
-                  <strong>Pro Tip:</strong> Even small increases make a big difference. Paying just £100 more per month could save you months of payments and hundreds in interest.
-                </p>
-              </div>
             </div>
+          </AnimatedSection>
 
-            {/* Timeline Chart */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">
-                  Debt Payoff Timeline
-                </h3>
-                {/* NEW: Learn more button */}
-                <button
-                  onClick={() => setShowStrategyModal(true)}
-                  className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                >
-                  Learn about strategies →
-                </button>
-              </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={prepareTimelineData()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="month" 
-                    label={{ value: 'Months', position: 'insideBottom', offset: -5 }}
-                  />
-                  <YAxis 
-                    label={{ value: 'Remaining Balance (£)', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip 
-                    formatter={(value: number) => `£${value.toFixed(2)}`}
-                    labelFormatter={(label) => `Month ${label}`}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="avalanche" 
-                    stroke="#ef4444" 
-                    strokeWidth={2}
-                    name="Avalanche"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="snowball" 
-                    stroke="#3b82f6" 
-                    strokeWidth={2}
-                    name="Snowball"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="hybrid" 
-                    stroke="#10b981" 
-                    strokeWidth={3}
-                    name="Hybrid (Recommended)"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-              <p className="text-sm text-gray-600 mt-4 text-center">
-                Watch your debt decrease over time with each strategy
-              </p>
-            </div>
+          <AnimatedSection delay={0.3}>
+            <div className="max-w-5xl mx-auto glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl md:text-4xl font-bold text-white mb-8 relative z-10 tech-heading flex items-center gap-3"
+              >
+                <Terminal className="w-8 h-8 text-[#ff006e]" />
+                Enter Your <span className="neon-text-cyan">Debt Data</span>
+              </motion.h2>
 
-            {/* Comparison Chart */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Strategy Comparison
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-700 mb-4">Time to Freedom</h4>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={prepareComparisonData()}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis label={{ value: 'Months', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip />
-                      <Bar dataKey="months" fill="#3b82f6" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-700 mb-4">Total Interest Paid</h4>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={prepareComparisonData()}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis label={{ value: 'Interest (£)', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip formatter={(value: number) => `£${value.toFixed(2)}`} />
-                      <Bar dataKey="interest" fill="#ef4444" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
-            {/* SHAP Explanations */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Why This Order? (Detailed Explanation)
-              </h3>
-              {results.explanations.map((exp: Explanation, idx: number) => (
-                <div key={idx} className="mb-4 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full font-bold">
-                      {exp.rank}
-                    </span>
-                    <h4 className="text-lg font-bold text-gray-900">{exp.debt_name}</h4>
-                  </div>
-                  <p className="text-gray-700">{exp.explanation}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Payment Schedule */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Your Monthly Payment Plan
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Follow this exact plan each month. We show the first 12 months below.
-              </p>
-              
-              <div className="space-y-4">
-                {results.strategies[results.recommended].payment_schedule?.slice(0, 12).map((month: any) => (
-                  <div key={month.month} className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-colors">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-bold text-lg text-gray-900">
-                        Month {month.month}
-                      </h4>
-                      <span className="text-sm font-semibold text-blue-600">
-                        Total: £{month.total_paid}
+              <div className="space-y-6 relative z-10">
+                {debts.map((debt, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="p-6 md:p-8 glass-card rounded-xl border border-white/10 hover:border-[#00f0ff]/30 transition-all"
+                  >
+                    <h3 className="font-bold text-white mb-6 text-lg flex items-center gap-2 mono">
+                      <span 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #00f0ff30, #00ff8830)',
+                          border: '1px solid #00f0ff40'
+                        }}
+                      >
+                        {index + 1}
                       </span>
-                    </div>
+                      DEBT ENTRY #{index + 1}
+                    </h3>
                     
-                    <div className="space-y-2">
-                      {month.payments.map((payment: any, idx: number) => (
-                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                          <div className="flex items-center gap-3">
-                            {payment.paid_off && (
-                              <span className="text-green-500 text-xl">✓</span>
-                            )}
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {payment.debt_name}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                Remaining: £{payment.remaining_balance.toLocaleString()}
-                                {payment.paid_off && <span className="text-green-600 font-bold ml-2">PAID OFF</span>}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="font-bold text-blue-600">
-                            £{payment.payment_amount.toLocaleString()}
-                          </span>
-                        </div>
-                      ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                          DEBT TYPE
+                        </label>
+                        <select
+                          value={debt.type}
+                          onChange={(e) => handleTypeChange(index, e.target.value)}
+                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white"
+                        >
+                          <option value="credit-card">Credit Card</option>
+                          <option value="store-card">Store Card</option>
+                          <option value="personal-loan">Personal Loan</option>
+                          <option value="car-finance">Car Finance</option>
+                          <option value="payday-loan">Payday Loan</option>
+                          <option value="overdraft">Bank Overdraft</option>
+                          <option value="student-loan">Student Loan</option>
+                          <option value="buy-now-pay-later">Buy Now Pay Later</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                          DEBT NAME
+                        </label>
+                        <input
+                          type="text"
+                          value={debt.name}
+                          onChange={(e) => updateDebt(index, 'name', e.target.value)}
+                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white"
+                          placeholder="e.g., Barclaycard"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                          BALANCE (£)
+                        </label>
+                        <input
+                          type="number"
+                          value={debt.balance || ''}
+                          onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
+                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                          placeholder="2400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                          INTEREST RATE (APR %)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={debt.apr || ''}
+                          onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
+                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                          placeholder="24.9"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                          MINIMUM PAYMENT (£)
+                        </label>
+                        <input
+                          type="number"
+                          value={debt.minPayment || ''}
+                          onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
+                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                          placeholder="60"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={addDebt}
+                  className="w-full px-6 py-4 glass-card border border-white/20 hover:border-[#00ff88]/50 text-white rounded-xl transition-all font-semibold text-lg mono"
+                >
+                  + ADD ANOTHER DEBT
+                </motion.button>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mt-10 p-8 glass-card rounded-xl border border-[#00f0ff]/20 relative z-10"
+              >
+                <label className="block text-xl font-bold text-white mb-4 mono flex items-center gap-2">
+                  <Activity className="w-6 h-6 text-[#00f0ff]" />
+                  MONTHLY DEBT PAYMENT BUDGET (£)
+                </label>
+                <input
+                  type="number"
+                  value={monthlyBudget || ''}
+                  onChange={(e) => setMonthlyBudget(parseFloat(e.target.value) || 0)}
+                  className="w-full px-6 py-4 text-2xl border-2 border-[#00f0ff]/30 rounded-xl focus:ring-4 focus:ring-[#00f0ff]/50 focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                  placeholder="500"
+                />
+                <p className="text-sm text-gray-400 mt-3">
+                  Total amount you can allocate across ALL debts each month
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="mt-8 p-6 glass-card rounded-xl border border-[#00ff88]/20 relative z-10"
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  <div 
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ 
+                      background: 'linear-gradient(135deg, #00ff8830, #00ff8820)',
+                      border: '1px solid #00ff8840'
+                    }}
+                  >
+                    <CheckCircle className="w-6 h-6 text-[#00ff88]" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2 mono">ENCRYPTED & PRIVATE</h4>
+                    <p className="text-sm text-gray-400">Zero data retention. All calculations happen in real-time with bank-grade encryption.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div 
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ 
+                      background: 'linear-gradient(135deg, #00f0ff30, #00f0ff20)',
+                      border: '1px solid #00f0ff40'
+                    }}
+                  >
+                    <Info className="w-6 h-6 text-[#00f0ff]" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2 mono">MATHEMATICAL OPTIMIZATION</h4>
+                    <p className="text-sm text-gray-400">Results based on proven algorithms. Always verify with creditors and consider professional financial advice.</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.button
+                whileHover={{ scale: 1.02, boxShadow: "0 0 60px rgba(0, 240, 255, 1)" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={calculateOptimization}
+                disabled={loading}
+                className="w-full mt-10 px-10 py-5 text-xl font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed relative z-10 overflow-hidden group"
+                style={{
+                  background: loading 
+                    ? 'linear-gradient(135deg, #00f0ff30 0%, #00ff8830 100%)'
+                    : 'linear-gradient(135deg, #00f0ff 0%, #00ff88 100%)',
+                  color: '#000',
+                  boxShadow: '0 0 40px rgba(0, 240, 255, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.4)',
+                  border: '3px solid #00f0ff',
+                  fontWeight: '900',
+                  textTransform: 'uppercase',
+                  letterSpacing: '2px'
+                }}
+              >
+                <span className="relative z-10 flex items-center justify-center gap-3 mono font-black">
+                  {loading ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Cpu className="w-6 h-6" />
+                      </motion.div>
+                      PROCESSING ALGORITHMS...
+                    </>
+                  ) : (
+                    <>
+                      <Terminal className="w-6 h-6" />
+                      EXECUTE OPTIMIZATION
+                      <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                    </>
+                  )}
+                </span>
+              </motion.button>
+            </div>
+          </AnimatedSection>
+
+          {results && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              id="results"
+              className="max-w-5xl mx-auto mt-12 space-y-10"
+            >
+              <AnimatedSection>
+                <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                  <div className="flex items-center justify-between mb-8 relative z-10">
+                    <motion.h2
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-3xl md:text-4xl font-bold text-white tech-heading flex items-center gap-3"
+                    >
+                      <Activity className="w-8 h-8 text-[#00ff88]" />
+                      Your <span className="neon-text-green">Optimized</span> Plan
+                    </motion.h2>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowStrategyModal(true)}
+                      className="flex items-center gap-2 text-[#00f0ff] hover:text-[#00ff88] font-semibold text-sm px-4 py-2 rounded-xl hover:bg-white/5 transition-all border border-white/10"
+                    >
+                      <HelpCircle className="w-4 h-4" />
+                      <span className="mono">WHY THIS?</span>
+                    </motion.button>
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-8 glass-card border-l-4 border-[#00f0ff] p-6 rounded-r-xl relative z-10"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Info className="w-6 h-6 text-[#00f0ff] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold text-white mb-2 text-lg mono">RECOMMENDED: {strategyInfo[results.recommended]?.name}</p>
+                        <p className="text-gray-300 leading-relaxed">
+                          {strategyInfo[results.recommended]?.description}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                    {Object.entries(results.strategies).map(([name, strategy]: [string, any], index) => (
+                      <motion.div
+                        key={name}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        className={`p-6 rounded-xl border transition-all ${
+                          name === results.recommended
+                            ? 'border-[#00ff88] bg-[#00ff88]/5 glow-border-green'
+                            : 'border-white/10 hover:border-white/20 glass-card'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-bold text-xl capitalize text-white mono">{name}</h3>
+                          {name === results.recommended && (
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="px-3 py-1 bg-[#00ff88] text-black text-xs rounded-full font-bold mono"
+                            >
+                              OPTIMAL
+                            </motion.span>
+                          )}
+                        </div>
+                        <motion.p
+                          initial={{ scale: 0.5 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: index * 0.1 + 0.2, type: "spring" }}
+                          className="text-4xl font-extrabold text-white mb-2 mono"
+                        >
+                          {strategy.months_to_freedom} <span className="text-xl text-gray-400">mo</span>
+                        </motion.p>
+                        <p className="text-sm text-gray-400 mono">
+                          £{strategy.total_interest.toFixed(2)} interest
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </AnimatedSection>
+
+              <AnimatedSection delay={0.8}>
+                <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    className="relative z-10 p-8 glass-card rounded-2xl border-2 border-[#00ff88]"
+                  >
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 tech-heading">
+                      Ready to be debt-free in <span className="neon-text-green">{results.strategies[results.recommended].months_to_freedom} months?</span> 🚀
+                    </h3>
+                    <p className="text-gray-300 mb-6 text-lg mono">
+                      You'll save <span className="font-bold text-[#00ff88]">£{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)}</span> vs. smallest-first method
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <motion.button
+                        whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 240, 255, 0.5)" }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => generatePDF({
+                          debts: debts.filter(d => d.balance > 0),
+                          monthlyBudget,
+                          results
+                        })}
+                        className="flex-1 px-8 py-4 btn-neon-cyan rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
+                      >
+                        <Terminal className="w-5 h-5" />
+                        DOWNLOAD PDF
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 255, 136, 0.5)" }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowEmailDialog(true)}
+                        className="flex-1 px-8 py-4 btn-neon-green rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
+                      >
+                        <Sparkles className="w-5 h-5" />
+                        EMAIL PLAN
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                </div>
+              </AnimatedSection>
+            </motion.div>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-16 py-12 border-t border-white/10 relative"
+          >
+            <div className="relative z-10">
+              <motion.p
+                whileHover={{ scale: 1.05 }}
+                className="text-lg font-bold text-white mb-2 tech-heading"
+              >
+                Built by <span className="neon-text-cyan">Kanyinsola Ogunbanjo</span>, MSc FinTech
+              </motion.p>
+              <p className="text-sm text-gray-400 mono">
+                Powered by Explainable AI & Proven Optimization Algorithms
+              </p>
+              <motion.div
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2, type: "spring" }}
+                className="mt-6 flex justify-center gap-3"
+              >
+                {[Terminal, Code, Cpu, Activity, Sparkles].map((Icon, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    whileHover={{ scale: 1.2, rotate: 360 }}
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ 
+                      background: 'linear-gradient(135deg, #00f0ff20, #00ff8820)',
+                      border: '1px solid rgba(0, 240, 255, 0.3)'
+                    }}
+                  >
+                    <Icon className="w-5 h-5 text-[#00f0ff]" />
+                  </motion.div>
+                ))}
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 }}
+                className="mt-6 flex justify-center gap-2 text-xs text-gray-500 mono"
+              >
+                <span>v2.0.1</span>
+                <span>•</span>
+                <span>DARK MODE ENABLED</span>
+                <span>•</span>
+                <span>© 2026</span>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {showEmailDialog && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-md flex items-center justify-center z-50 p-4 modal-backdrop"
+          onClick={() => setShowEmailDialog(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.5 }}
+            className="glass-card rounded-2xl p-8 max-w-md w-full mx-4 relative overflow-hidden border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-3xl font-bold text-white tech-heading flex items-center gap-3">
+                  <Terminal className="w-8 h-8 text-[#00f0ff]" />
+                  Email Plan
+                </h3>
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowEmailDialog(false)}
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors border border-white/10"
+                >
+                  <X className="w-6 h-6 text-gray-400" />
+                </motion.button>
               </div>
               
-              {results.strategies[results.recommended].payment_schedule?.length > 12 && (
-                <p className="text-sm text-gray-500 mt-4 text-center">
-                  Showing first 12 months of {results.strategies[results.recommended].months_to_freedom} month plan
-                </p>
-              )}
-            </div>
-
-            {/* Call to Action */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border-2 border-green-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Ready to become debt-free in {results.strategies[results.recommended].months_to_freedom} months?
-                </h3>
-                <p className="text-gray-700 mb-4">
-                  You'll save £{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)} compared to paying smallest debts first
-                </p>
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => generatePDF({
-                      debts: debts.filter(d => d.balance > 0),
-                      monthlyBudget,
-                      results
-                    })}
-                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Download as PDF
-                  </button>
-                  <button 
-                    onClick={() => setShowEmailDialog(true)}
-                    className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Email My Plan
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Email Dialog */}
-        {showEmailDialog && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Email Your Plan
-              </h3>
-              <p className="text-gray-600 mb-6">
-                We'll send your personalized debt freedom plan to your email
+              <p className="text-gray-400 mb-6">
+                Receive your personalized debt freedom plan via email
               </p>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Name
+                  <label className="block text-sm font-bold text-gray-400 mb-2 mono">
+                    YOUR NAME
                   </label>
                   <input
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-white/20 rounded-xl focus:ring-4 focus:ring-[#00ff88]/50 focus:border-[#00ff88] transition-all bg-[#1a1a1a] text-white"
                     placeholder="John Smith"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Email
+                  <label className="block text-sm font-bold text-gray-400 mb-2 mono">
+                    YOUR EMAIL
                   </label>
                   <input
                     type="email"
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-white/20 rounded-xl focus:ring-4 focus:ring-[#00ff88]/50 focus:border-[#00ff88] transition-all bg-[#1a1a1a] text-white mono"
                     placeholder="john@example.com"
                   />
                 </div>
               </div>
               
-              <div className="flex gap-3 mt-6">
-                <button
+              <div className="flex gap-3 mt-8">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleSendEmail}
                   disabled={sendingEmail}
-                  className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 btn-neon-green rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed mono"
                 >
-                  {sendingEmail ? 'Sending...' : 'Send Email'}
-                </button>
-                <button
+                  {sendingEmail ? 'SENDING...' : 'SEND EMAIL'}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setShowEmailDialog(false)
                     setUserName('')
                     setUserEmail('')
                   }}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                  className="px-6 py-3 glass-card border border-white/20 text-white font-bold rounded-xl hover:border-white/40 transition-colors mono"
                 >
-                  Cancel
-                </button>
+                  CANCEL
+                </motion.button>
               </div>
             </div>
-          </div>
-        )}
+          </motion.div>
+        </motion.div>
+      )}
 
-        {/* NEW: Strategy Modal */}
-        <StrategyModal />
-
-        {/* Footer */}
-        <div className="text-center mt-12 py-8 border-t border-gray-300">
-          <p className="text-sm text-gray-700 font-semibold mb-1">
-            Built by Kanyinsola Ogunbanjo, MSc FinTech
-          </p>
-          <p className="text-xs text-gray-500">
-            Powered by Explainable AI & Proven Debt Optimization Algorithms
-          </p>
-        </div>
-      </div>
-    </div>
+      <StrategyModal />
+    </>
   )
 }
 
