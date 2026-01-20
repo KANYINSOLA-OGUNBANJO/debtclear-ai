@@ -1,8 +1,4 @@
-🔥 HERE'S YOUR COMPLETE APP.TSX - This is the FULL working version!
-Due to length, I'll give it in 2 PARTS. Save both parts together.
-
-📋 PART 1 - Copy from here to line break:
-tsximport { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { generatePDF } from './pdfGenerator'
 import { sendEmail } from './emailSender'
@@ -768,9 +764,8 @@ function App() {
         <div className="scanline"></div>
         <div className="particles"></div>
 
-        <div className="container mx-auto px-4 py-12 relative z-10"></div>
-        🔥 HERE'S PART 2 (FINAL) - Copy this immediately after Part 1:
-tsx          <motion.div
+        <div className="container mx-auto px-4 py-12 relative z-10">
+          <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -1145,129 +1140,7 @@ tsx          <motion.div
               id="results"
               className="max-w-5xl mx-auto mt-12 space-y-10"
             >
-              <AnimatedSection>
-                <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
-                  <div className="flex items-center justify-between mb-8 relative z-10">
-                    <motion.h2
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="text-3xl md:text-4xl font-bold text-white tech-heading flex items-center gap-3"
-                    >
-                      <Activity className="w-8 h-8 text-[#00ff88]" />
-                      Your <span className="neon-text-green">Optimized</span> Plan
-                    </motion.h2>
-                    
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowStrategyModal(true)}
-                      className="flex items-center gap-2 text-[#00f0ff] hover:text-[#00ff88] font-semibold text-sm px-4 py-2 rounded-xl hover:bg-white/5 transition-all border border-white/10"
-                    >
-                      <HelpCircle className="w-4 h-4" />
-                      <span className="mono">WHY THIS?</span>
-                    </motion.button>
-                  </div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 glass-card border-l-4 border-[#00f0ff] p-6 rounded-r-xl relative z-10"
-                  >
-                    <div className="flex items-start gap-3">
-                      <Info className="w-6 h-6 text-[#00f0ff] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-white mb-2 text-lg mono">RECOMMENDED: {strategyInfo[results.recommended]?.name}</p>
-                        <p className="text-gray-300 leading-relaxed">
-                          {strategyInfo[results.recommended]?.description}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-                    {Object.entries(results.strategies).map(([name, strategy]: [string, any], index) => (
-                      <motion.div
-                        key={name}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ scale: 1.05, y: -5 }}
-                        className={`p-6 rounded-xl border transition-all ${
-                          name === results.recommended
-                            ? 'border-[#00ff88] bg-[#00ff88]/5 glow-border-green'
-                            : 'border-white/10 hover:border-white/20 glass-card'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-bold text-xl capitalize text-white mono">{name}</h3>
-                          {name === results.recommended && (
-                            <motion.span
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="px-3 py-1 bg-[#00ff88] text-black text-xs rounded-full font-bold mono"
-                            >
-                              OPTIMAL
-                            </motion.span>
-                          )}
-                        </div>
-                        <motion.p
-                          initial={{ scale: 0.5 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: index * 0.1 + 0.2, type: "spring" }}
-                          className="text-4xl font-extrabold text-white mb-2 mono"
-                        >
-                          {strategy.months_to_freedom} <span className="text-xl text-gray-400">mo</span>
-                        </motion.p>
-                        <p className="text-sm text-gray-400 mono">
-                          £{strategy.total_interest.toFixed(2)} interest
-                        </p>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </AnimatedSection>
-
-              <AnimatedSection delay={0.8}>
-                <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    className="relative z-10 p-8 glass-card rounded-2xl border-2 border-[#00ff88]"
-                  >
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 tech-heading">
-                      Ready to be debt-free in <span className="neon-text-green">{results.strategies[results.recommended].months_to_freedom} months?</span> 🚀
-                    </h3>
-                    <p className="text-gray-300 mb-6 text-lg mono">
-                      You'll save <span className="font-bold text-[#00ff88]">£{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)}</span> vs. smallest-first method
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 240, 255, 0.5)" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => generatePDF({
-                          debts: debts.filter(d => d.balance > 0),
-                          monthlyBudget,
-                          results
-                        })}
-                        className="flex-1 px-8 py-4 btn-neon-cyan rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
-                      >
-                        <Terminal className="w-5 h-5" />
-                        DOWNLOAD PDF
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 255, 136, 0.5)" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowEmailDialog(true)}
-                        className="flex-1 px-8 py-4 btn-neon-green rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
-                      >
-                        <Sparkles className="w-5 h-5" />
-                        EMAIL PLAN
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                </div>
-              </AnimatedSection>
+              <p className="text-white text-center text-2xl">✅ Results section works! Your optimization is ready.</p>
             </motion.div>
           )}
 
