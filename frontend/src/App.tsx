@@ -761,12 +761,10 @@ function App() {
     <>
       <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden">
         <div className="grid-background"></div>
-        <div className="scanline"></div>
         <div className="particles"></div>
 
-        <div className="container mx-auto px-4 py-12 relative z-10"></div>
-        🔥 HERE'S PART 2 (FINAL) - Copy this immediately after Part 1:
-tsx          <motion.div
+        <div className="container mx-auto px-4 py-12 relative z-10">
+          <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -811,8 +809,7 @@ tsx          <motion.div
               className="flex flex-wrap justify-center gap-4"
             >
               {[
-                { text: "MSc FinTech", icon: Terminal, color: "#00f0ff" },
-                { text: "Bank-Grade", icon: Cpu, color: "#00ff88" },
+                { text: "Bank-Grade Security", icon: Cpu, color: "#00ff88" },
                 { text: "100% Free", icon: Sparkles, color: "#b388ff" },
                 { text: "Privacy First", icon: Activity, color: "#ff006e" }
               ].map((badge, index) => {
@@ -910,229 +907,207 @@ tsx          <motion.div
             </div>
           </AnimatedSection>
 
-          <AnimatedSection delay={0.3}>
-            <div className="max-w-5xl mx-auto glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-3xl md:text-4xl font-bold text-white mb-8 relative z-10 tech-heading flex items-center gap-3"
-              >
-                <Terminal className="w-8 h-8 text-[#ff006e]" />
-                Enter Your <span className="neon-text-cyan">Debt Data</span>
-              </motion.h2>
+          <div className="max-w-5xl mx-auto glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10 mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 relative z-10 tech-heading flex items-center gap-3">
+              <Terminal className="w-8 h-8 text-[#ff006e]" />
+              Enter Your <span className="neon-text-cyan">Debt Data</span>
+            </h2>
 
-              <div className="space-y-6 relative z-10">
-                {debts.map((debt, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-6 md:p-8 glass-card rounded-xl border border-white/10 hover:border-[#00f0ff]/30 transition-all"
-                  >
-                    <h3 className="font-bold text-white mb-6 text-lg flex items-center gap-2 mono">
-                      <span 
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-                        style={{ 
-                          background: 'linear-gradient(135deg, #00f0ff30, #00ff8830)',
-                          border: '1px solid #00f0ff40'
-                        }}
-                      >
-                        {index + 1}
-                      </span>
-                      DEBT ENTRY #{index + 1}
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
-                          DEBT TYPE
-                        </label>
-                        <select
-                          value={debt.type}
-                          onChange={(e) => handleTypeChange(index, e.target.value)}
-                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white"
-                        >
-                          <option value="credit-card">Credit Card</option>
-                          <option value="store-card">Store Card</option>
-                          <option value="personal-loan">Personal Loan</option>
-                          <option value="car-finance">Car Finance</option>
-                          <option value="payday-loan">Payday Loan</option>
-                          <option value="overdraft">Bank Overdraft</option>
-                          <option value="student-loan">Student Loan</option>
-                          <option value="buy-now-pay-later">Buy Now Pay Later</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
-                          DEBT NAME
-                        </label>
-                        <input
-                          type="text"
-                          value={debt.name}
-                          onChange={(e) => updateDebt(index, 'name', e.target.value)}
-                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white"
-                          placeholder="e.g., Barclaycard"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
-                          BALANCE (£)
-                        </label>
-                        <input
-                          type="number"
-                          value={debt.balance || ''}
-                          onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
-                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
-                          placeholder="2400"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
-                          INTEREST RATE (APR %)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={debt.apr || ''}
-                          onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
-                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
-                          placeholder="24.9"
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
-                          MINIMUM PAYMENT (£)
-                        </label>
-                        <input
-                          type="number"
-                          value={debt.minPayment || ''}
-                          onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
-                          className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
-                          placeholder="60"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-                
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={addDebt}
-                  className="w-full px-6 py-4 glass-card border border-white/20 hover:border-[#00ff88]/50 text-white rounded-xl transition-all font-semibold text-lg mono"
+            <div className="space-y-6 relative z-10">
+              {debts.map((debt, index) => (
+                <div
+                  key={index}
+                  className="p-6 md:p-8 glass-card rounded-xl border border-white/10 hover:border-[#00f0ff]/30 transition-all"
                 >
-                  + ADD ANOTHER DEBT
-                </motion.button>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="mt-10 p-8 glass-card rounded-xl border border-[#00f0ff]/20 relative z-10"
-              >
-                <label className="block text-xl font-bold text-white mb-4 mono flex items-center gap-2">
-                  <Activity className="w-6 h-6 text-[#00f0ff]" />
-                  MONTHLY DEBT PAYMENT BUDGET (£)
-                </label>
-                <input
-                  type="number"
-                  value={monthlyBudget || ''}
-                  onChange={(e) => setMonthlyBudget(parseFloat(e.target.value) || 0)}
-                  className="w-full px-6 py-4 text-2xl border-2 border-[#00f0ff]/30 rounded-xl focus:ring-4 focus:ring-[#00f0ff]/50 focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
-                  placeholder="500"
-                />
-                <p className="text-sm text-gray-400 mt-3">
-                  Total amount you can allocate across ALL debts each month
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                className="mt-8 p-6 glass-card rounded-xl border border-[#00ff88]/20 relative z-10"
-              >
-                <div className="flex items-start gap-4 mb-4">
-                  <div 
-                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ 
-                      background: 'linear-gradient(135deg, #00ff8830, #00ff8820)',
-                      border: '1px solid #00ff8840'
-                    }}
-                  >
-                    <CheckCircle className="w-6 h-6 text-[#00ff88]" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2 mono">ENCRYPTED & PRIVATE</h4>
-                    <p className="text-sm text-gray-400">Zero data retention. All calculations happen in real-time with bank-grade encryption.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div 
-                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ 
-                      background: 'linear-gradient(135deg, #00f0ff30, #00f0ff20)',
-                      border: '1px solid #00f0ff40'
-                    }}
-                  >
-                    <Info className="w-6 h-6 text-[#00f0ff]" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2 mono">MATHEMATICAL OPTIMIZATION</h4>
-                    <p className="text-sm text-gray-400">Results based on proven algorithms. Always verify with creditors and consider professional financial advice.</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.button
-                whileHover={{ scale: 1.02, boxShadow: "0 0 60px rgba(0, 240, 255, 1)" }}
-                whileTap={{ scale: 0.98 }}
-                onClick={calculateOptimization}
-                disabled={loading}
-                className="w-full mt-10 px-10 py-5 text-xl font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed relative z-10 overflow-hidden group"
-                style={{
-                  background: loading 
-                    ? 'linear-gradient(135deg, #00f0ff30 0%, #00ff8830 100%)'
-                    : 'linear-gradient(135deg, #00f0ff 0%, #00ff88 100%)',
-                  color: '#000',
-                  boxShadow: '0 0 40px rgba(0, 240, 255, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.4)',
-                  border: '3px solid #00f0ff',
-                  fontWeight: '900',
-                  textTransform: 'uppercase',
-                  letterSpacing: '2px'
-                }}
-              >
-                <span className="relative z-10 flex items-center justify-center gap-3 mono font-black">
-                  {loading ? (
-                    <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  <h3 className="font-bold text-white mb-6 text-lg flex items-center gap-2 mono">
+                    <span 
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                      style={{ 
+                        background: 'linear-gradient(135deg, #00f0ff30, #00ff8830)',
+                        border: '1px solid #00f0ff40'
+                      }}
+                    >
+                      {index + 1}
+                    </span>
+                    DEBT ENTRY #{index + 1}
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                        DEBT TYPE
+                      </label>
+                      <select
+                        value={debt.type}
+                        onChange={(e) => handleTypeChange(index, e.target.value)}
+                        className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white"
                       >
-                        <Cpu className="w-6 h-6" />
-                      </motion.div>
-                      PROCESSING ALGORITHMS...
-                    </>
-                  ) : (
-                    <>
-                      <Terminal className="w-6 h-6" />
-                      EXECUTE OPTIMIZATION
-                      <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                    </>
-                  )}
-                </span>
-              </motion.button>
+                        <option value="credit-card">Credit Card</option>
+                        <option value="store-card">Store Card</option>
+                        <option value="personal-loan">Personal Loan</option>
+                        <option value="car-finance">Car Finance</option>
+                        <option value="payday-loan">Payday Loan</option>
+                        <option value="overdraft">Bank Overdraft</option>
+                        <option value="student-loan">Student Loan</option>
+                        <option value="buy-now-pay-later">Buy Now Pay Later</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                        DEBT NAME
+                      </label>
+                      <input
+                        type="text"
+                        value={debt.name}
+                        onChange={(e) => updateDebt(index, 'name', e.target.value)}
+                        className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white"
+                        placeholder="e.g., Barclaycard"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                        BALANCE (£)
+                      </label>
+                      <input
+                        type="number"
+                        value={debt.balance || ''}
+                        onChange={(e) => updateDebt(index, 'balance', parseFloat(e.target.value) || 0)}
+                        className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                        placeholder="2400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                        INTEREST RATE (APR %)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={debt.apr || ''}
+                        onChange={(e) => updateDebt(index, 'apr', parseFloat(e.target.value) || 0)}
+                        className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                        placeholder="24.9"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-400 mb-2 mono">
+                        MINIMUM PAYMENT (£)
+                      </label>
+                      <input
+                        type="number"
+                        value={debt.minPayment || ''}
+                        onChange={(e) => updateDebt(index, 'minPayment', parseFloat(e.target.value) || 0)}
+                        className="w-full px-4 py-3 border border-white/10 rounded-xl focus:ring-2 focus:ring-[#00f0ff] focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                        placeholder="60"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <button
+                onClick={addDebt}
+                className="w-full px-6 py-4 glass-card border border-white/20 hover:border-[#00ff88]/50 text-white rounded-xl transition-all font-semibold text-lg mono hover:scale-[1.02]"
+              >
+                + ADD ANOTHER DEBT
+              </button>
             </div>
-          </AnimatedSection>
+
+            <div className="mt-10 p-8 glass-card rounded-xl border border-[#00f0ff]/20 relative z-10">
+              <label className="block text-xl font-bold text-white mb-4 mono flex items-center gap-2">
+                <Activity className="w-6 h-6 text-[#00f0ff]" />
+                MONTHLY DEBT PAYMENT BUDGET (£)
+              </label>
+              <input
+                type="number"
+                value={monthlyBudget || ''}
+                onChange={(e) => setMonthlyBudget(parseFloat(e.target.value) || 0)}
+                className="w-full px-6 py-4 text-2xl border-2 border-[#00f0ff]/30 rounded-xl focus:ring-4 focus:ring-[#00f0ff]/50 focus:border-[#00f0ff] transition-all bg-[#1a1a1a] text-white mono"
+                placeholder="500"
+              />
+              <p className="text-sm text-gray-400 mt-3">
+                Total amount you can allocate across ALL debts each month
+              </p>
+            </div>
+
+            <div className="mt-8 p-6 glass-card rounded-xl border border-[#00ff88]/20 relative z-10">
+              <div className="flex items-start gap-4 mb-4">
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #00ff8830, #00ff8820)',
+                    border: '1px solid #00ff8840'
+                  }}
+                >
+                  <CheckCircle className="w-6 h-6 text-[#00ff88]" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white mb-2 mono">ENCRYPTED & PRIVATE</h4>
+                  <p className="text-sm text-gray-400">Zero data retention. All calculations happen in real-time with bank-grade encryption.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #00f0ff30, #00f0ff20)',
+                    border: '1px solid #00f0ff40'
+                  }}
+                >
+                  <Info className="w-6 h-6 text-[#00f0ff]" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white mb-2 mono">MATHEMATICAL OPTIMIZATION</h4>
+                  <p className="text-sm text-gray-400">Results based on proven algorithms. Always verify with creditors and consider professional financial advice.</p>
+                </div>
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02, boxShadow: "0 0 60px rgba(0, 240, 255, 1)" }}
+              whileTap={{ scale: 0.98 }}
+              onClick={calculateOptimization}
+              disabled={loading}
+              className="w-full mt-10 px-10 py-5 text-xl font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed relative z-10 overflow-hidden group"
+              style={{
+                background: loading 
+                  ? 'linear-gradient(135deg, #00f0ff30 0%, #00ff8830 100%)'
+                  : 'linear-gradient(135deg, #00f0ff 0%, #00ff88 100%)',
+                color: '#000',
+                boxShadow: '0 0 40px rgba(0, 240, 255, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.4)',
+                border: '3px solid #00f0ff',
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
+              }}
+            >
+              <span className="relative z-10 flex items-center justify-center gap-3 mono font-black">
+                {loading ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Cpu className="w-6 h-6" />
+                    </motion.div>
+                    PROCESSING ALGORITHMS...
+                  </>
+                ) : (
+                  <>
+                    <Terminal className="w-6 h-6" />
+                    EXECUTE OPTIMIZATION
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  </>
+                )}
+              </span>
+            </motion.button>
+          </div>
 
           {results && (
             <motion.div
@@ -1141,129 +1116,282 @@ tsx          <motion.div
               id="results"
               className="max-w-5xl mx-auto mt-12 space-y-10"
             >
-              <AnimatedSection>
-                <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
-                  <div className="flex items-center justify-between mb-8 relative z-10">
-                    <motion.h2
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="text-3xl md:text-4xl font-bold text-white tech-heading flex items-center gap-3"
+              {/* Main Results Card */}
+              <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                <div className="flex items-center justify-between mb-8 relative z-10">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white tech-heading flex items-center gap-3">
+                    <Activity className="w-8 h-8 text-[#00ff88]" />
+                    Your <span className="neon-text-green">Optimized</span> Plan
+                  </h2>
+                  
+                  <button
+                    onClick={() => setShowStrategyModal(true)}
+                    className="flex items-center gap-2 text-[#00f0ff] hover:text-[#00ff88] font-semibold text-sm px-4 py-2 rounded-xl hover:bg-white/5 transition-all border border-white/10"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                    <span className="mono">WHY THIS?</span>
+                  </button>
+                </div>
+                
+                <div className="mb-8 glass-card border-l-4 border-[#00f0ff] p-6 rounded-r-xl relative z-10">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-6 h-6 text-[#00f0ff] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-white mb-2 text-lg mono">
+                        RECOMMENDED: {strategyInfo[results.recommended]?.name}
+                      </p>
+                      <p className="text-gray-300 leading-relaxed">
+                        {strategyInfo[results.recommended]?.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                  {Object.entries(results.strategies).map(([name, strategy]: [string, any], index) => (
+                    <motion.div
+                      key={name}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      className={`p-6 rounded-xl border transition-all ${
+                        name === results.recommended
+                          ? 'border-[#00ff88] bg-[#00ff88]/5 glow-border-green'
+                          : 'border-white/10 hover:border-white/20 glass-card'
+                      }`}
                     >
-                      <Activity className="w-8 h-8 text-[#00ff88]" />
-                      Your <span className="neon-text-green">Optimized</span> Plan
-                    </motion.h2>
-                    
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-xl capitalize text-white mono">{name}</h3>
+                        {name === results.recommended && (
+                          <span className="px-3 py-1 bg-[#00ff88] text-black text-xs rounded-full font-bold mono">
+                            OPTIMAL
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-4xl font-extrabold text-white mb-2 mono">
+                        {strategy.months_to_freedom} <span className="text-xl text-gray-400">mo</span>
+                      </p>
+                      <p className="text-sm text-gray-400 mono">
+                        £{strategy.total_interest.toFixed(2)} interest
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA Card */}
+              <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                <div className="relative z-10 p-8 glass-card rounded-2xl border-2 border-[#00ff88]">
+                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 tech-heading">
+                    Ready to be debt-free in <span className="neon-text-green">{results.strategies[results.recommended].months_to_freedom} months?</span> 🚀
+                  </h3>
+                  <p className="text-gray-300 mb-6 text-lg mono">
+                    You'll save <span className="font-bold text-[#00ff88]">£{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)}</span> vs. smallest-first method
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <motion.button
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 240, 255, 0.5)" }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowStrategyModal(true)}
-                      className="flex items-center gap-2 text-[#00f0ff] hover:text-[#00ff88] font-semibold text-sm px-4 py-2 rounded-xl hover:bg-white/5 transition-all border border-white/10"
+                      onClick={() => generatePDF({
+                        debts: debts.filter(d => d.balance > 0),
+                        monthlyBudget,
+                        results
+                      })}
+                      className="flex-1 px-8 py-4 btn-neon-cyan rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
                     >
-                      <HelpCircle className="w-4 h-4" />
-                      <span className="mono">WHY THIS?</span>
+                      <Terminal className="w-5 h-5" />
+                      DOWNLOAD PDF
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 255, 136, 0.5)" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowEmailDialog(true)}
+                      className="flex-1 px-8 py-4 btn-neon-green rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      EMAIL PLAN
                     </motion.button>
                   </div>
+                </div>
+              </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 glass-card border-l-4 border-[#00f0ff] p-6 rounded-r-xl relative z-10"
-                  >
-                    <div className="flex items-start gap-3">
-                      <Info className="w-6 h-6 text-[#00f0ff] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-white mb-2 text-lg mono">RECOMMENDED: {strategyInfo[results.recommended]?.name}</p>
-                        <p className="text-gray-300 leading-relaxed">
-                          {strategyInfo[results.recommended]?.description}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
+              {/* Timeline Chart */}
+              <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 tech-heading flex items-center gap-3">
+                  <Activity className="w-7 h-7 text-[#b388ff]" />
+                  Debt Freedom <span className="neon-text-cyan">Timeline</span>
+                </h3>
+                <p className="text-gray-400 mb-8">See how your debt decreases over time with each strategy</p>
+                
+                <div className="w-full h-80 relative z-10">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={prepareTimelineData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis 
+                        dataKey="month" 
+                        stroke="#a0a0a0"
+                        label={{ value: 'Months', position: 'insideBottom', offset: -5, fill: '#a0a0a0' }}
+                      />
+                      <YAxis 
+                        stroke="#a0a0a0"
+                        label={{ value: 'Balance (£)', angle: -90, position: 'insideLeft', fill: '#a0a0a0' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#1a1a1a', 
+                          border: '1px solid rgba(0, 240, 255, 0.3)',
+                          borderRadius: '10px'
+                        }}
+                      />
+                      <Legend />
+                      <Line type="monotone" dataKey="avalanche" stroke="#ff006e" strokeWidth={3} dot={false} name="Avalanche" />
+                      <Line type="monotone" dataKey="snowball" stroke="#b388ff" strokeWidth={3} dot={false} name="Snowball" />
+                      <Line type="monotone" dataKey="hybrid" stroke="#00ff88" strokeWidth={3} dot={false} name="Hybrid (Recommended)" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-                    {Object.entries(results.strategies).map(([name, strategy]: [string, any], index) => (
-                      <motion.div
-                        key={name}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ scale: 1.05, y: -5 }}
-                        className={`p-6 rounded-xl border transition-all ${
-                          name === results.recommended
-                            ? 'border-[#00ff88] bg-[#00ff88]/5 glow-border-green'
-                            : 'border-white/10 hover:border-white/20 glass-card'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-bold text-xl capitalize text-white mono">{name}</h3>
-                          {name === results.recommended && (
-                            <motion.span
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="px-3 py-1 bg-[#00ff88] text-black text-xs rounded-full font-bold mono"
-                            >
-                              OPTIMAL
-                            </motion.span>
+              {/* Strategy Comparison Chart */}
+              <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 tech-heading flex items-center gap-3">
+                  <Terminal className="w-7 h-7 text-[#00f0ff]" />
+                  Strategy <span className="neon-text-green">Comparison</span>
+                </h3>
+                <p className="text-gray-400 mb-8">Total interest paid and time to freedom for each method</p>
+                
+                <div className="w-full h-80 relative z-10">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={prepareComparisonData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis dataKey="name" stroke="#a0a0a0" />
+                      <YAxis stroke="#a0a0a0" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#1a1a1a', 
+                          border: '1px solid rgba(0, 240, 255, 0.3)',
+                          borderRadius: '10px'
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="interest" fill="#00f0ff" name="Total Interest (£)" />
+                      <Bar dataKey="months" fill="#00ff88" name="Months to Freedom" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* AI Explanations */}
+              <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 tech-heading flex items-center gap-3">
+                  <Cpu className="w-7 h-7 text-[#ff006e]" />
+                  AI <span className="neon-text-cyan">Reasoning</span>
+                </h3>
+                <p className="text-gray-400 mb-8">Why we prioritized your debts in this order (powered by SHAP analysis)</p>
+                
+                <div className="space-y-4 relative z-10">
+                  {results.explanations.map((exp: any, index: number) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="p-6 glass-card rounded-xl border border-white/10 hover:border-[#00f0ff]/30 transition-all"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div 
+                          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-white text-lg"
+                          style={{ 
+                            background: 'linear-gradient(135deg, #00f0ff30, #00ff8830)',
+                            border: '1px solid #00f0ff40'
+                          }}
+                        >
+                          {exp.rank}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white text-lg mb-2 mono">{exp.debt_name}</h4>
+                          <p className="text-gray-300 leading-relaxed mb-4">{exp.explanation}</p>
+                          
+                          {exp.shap_values && Object.keys(exp.shap_values).length > 0 && (
+                            <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                              <p className="text-sm font-bold text-gray-400 mb-3 mono">IMPACT FACTORS:</p>
+                              <div className="grid grid-cols-2 gap-3">
+                                {Object.entries(exp.shap_values).map(([key, value]: [string, any]) => (
+                                  <div key={key} className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${value > 0 ? 'bg-[#00ff88]' : 'bg-[#ff006e]'}`} />
+                                    <span className="text-sm text-gray-300">
+                                      {key.replace(/_/g, ' ')}: 
+                                      <span className={`font-bold ml-1 ${value > 0 ? 'text-[#00ff88]' : 'text-[#ff006e]'}`}>
+                                        {value > 0 ? '+' : ''}{value.toFixed(2)}
+                                      </span>
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
-                        <motion.p
-                          initial={{ scale: 0.5 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: index * 0.1 + 0.2, type: "spring" }}
-                          className="text-4xl font-extrabold text-white mb-2 mono"
-                        >
-                          {strategy.months_to_freedom} <span className="text-xl text-gray-400">mo</span>
-                        </motion.p>
-                        <p className="text-sm text-gray-400 mono">
-                          £{strategy.total_interest.toFixed(2)} interest
-                        </p>
-                      </motion.div>
-                    ))}
-                  </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              </AnimatedSection>
+              </div>
 
-              <AnimatedSection delay={0.8}>
-                <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    className="relative z-10 p-8 glass-card rounded-2xl border-2 border-[#00ff88]"
-                  >
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 tech-heading">
-                      Ready to be debt-free in <span className="neon-text-green">{results.strategies[results.recommended].months_to_freedom} months?</span> 🚀
-                    </h3>
-                    <p className="text-gray-300 mb-6 text-lg mono">
-                      You'll save <span className="font-bold text-[#00ff88]">£{Math.abs(results.strategies.snowball.total_interest - results.strategies[results.recommended].total_interest).toFixed(2)}</span> vs. smallest-first method
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 240, 255, 0.5)" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => generatePDF({
-                          debts: debts.filter(d => d.balance > 0),
-                          monthlyBudget,
-                          results
-                        })}
-                        className="flex-1 px-8 py-4 btn-neon-cyan rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
-                      >
-                        <Terminal className="w-5 h-5" />
-                        DOWNLOAD PDF
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0, 255, 136, 0.5)" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowEmailDialog(true)}
-                        className="flex-1 px-8 py-4 btn-neon-green rounded-xl font-bold flex items-center justify-center gap-2 text-lg mono"
-                      >
-                        <Sparkles className="w-5 h-5" />
-                        EMAIL PLAN
-                      </motion.button>
-                    </div>
-                  </motion.div>
+              {/* Payment Schedule Preview */}
+              <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-white/10">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 tech-heading flex items-center gap-3">
+                  <Sparkles className="w-7 h-7 text-[#b388ff]" />
+                  First 6 Months <span className="neon-text-green">Payment Schedule</span>
+                </h3>
+                <p className="text-gray-400 mb-8">Your optimized payment plan using the {results.recommended} strategy</p>
+                
+                <div className="overflow-x-auto relative z-10">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        <th className="text-left py-4 px-4 text-gray-400 font-bold mono text-sm">MONTH</th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-bold mono text-sm">DEBT</th>
+                        <th className="text-right py-4 px-4 text-gray-400 font-bold mono text-sm">PAYMENT</th>
+                        <th className="text-right py-4 px-4 text-gray-400 font-bold mono text-sm">BALANCE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.strategies[results.recommended].timeline.slice(0, 6).map((month: any, index: number) => (
+                        <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-all">
+                          <td className="py-4 px-4 text-white font-bold mono">{index + 1}</td>
+                          <td className="py-4 px-4 text-gray-300">{month.debt_paid || 'Multiple debts'}</td>
+                          <td className="py-4 px-4 text-right text-[#00ff88] font-bold mono">
+                            £{month.payment?.toFixed(2) || monthlyBudget.toFixed(2)}
+                          </td>
+                          <td className="py-4 px-4 text-right text-white font-bold mono">
+                            £{month.remaining_balance?.toFixed(2) || '0.00'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              </AnimatedSection>
+                
+                <p className="text-sm text-gray-400 mt-6 text-center">
+                  📄 Download the full PDF for your complete {results.strategies[results.recommended].months_to_freedom}-month payment schedule
+                </p>
+              </div>
+
+              {/* Freedom Date */}
+              <div className="glass-card rounded-2xl p-8 md:p-12 relative overflow-hidden border border-[#00ff88]/30 text-center">
+                <div className="relative z-10">
+                  <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 tech-heading">
+                    🎉 Your Debt Freedom Date
+                  </h3>
+                  <p className="text-5xl md:text-6xl font-extrabold neon-text-green mb-6 mono">
+                    {calculateFreedomDate(results.strategies[results.recommended].months_to_freedom)}
+                  </p>
+                  <p className="text-xl text-gray-300">
+                    Mark your calendar! In just <span className="font-bold text-[#00ff88]">{results.strategies[results.recommended].months_to_freedom} months</span>, you'll be completely debt-free! 🚀
+                  </p>
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -1276,13 +1404,11 @@ tsx          <motion.div
             <div className="relative z-10">
               <motion.p
                 whileHover={{ scale: 1.05 }}
-                className="text-lg font-bold text-white mb-2 tech-heading"
+                className="text-lg font-bold text-white tech-heading"
               >
-                Built by <span className="neon-text-cyan">Kanyinsola Ogunbanjo</span>, MSc FinTech
+                <span className="neon-text-cyan">Kanyinsola Ogunbanjo</span> © 2026
               </motion.p>
-              <p className="text-sm text-gray-400 mono">
-                Powered by Explainable AI & Proven Optimization Algorithms
-              </p>
+              
               <motion.div
                 initial={{ scale: 0 }}
                 whileInView={{ scale: 1 }}
@@ -1307,20 +1433,6 @@ tsx          <motion.div
                     <Icon className="w-5 h-5 text-[#00f0ff]" />
                   </motion.div>
                 ))}
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
-                className="mt-6 flex justify-center gap-2 text-xs text-gray-500 mono"
-              >
-                <span>v2.0.1</span>
-                <span>•</span>
-                <span>DARK MODE ENABLED</span>
-                <span>•</span>
-                <span>© 2026</span>
               </motion.div>
             </div>
           </motion.div>
